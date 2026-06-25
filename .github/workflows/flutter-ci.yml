@@ -1,0 +1,17 @@
+name: Flutter CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
+      - run: cd flutter_voice_recorder && flutter pub get
+      - run: cd flutter_voice_recorder && flutter analyze
