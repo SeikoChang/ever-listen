@@ -28,4 +28,44 @@ Map<String, dynamic>? status = await recorder.getStatus();
 recorder.events.listen((String event) {
   // 'speechStarted', 'speechEnded', 'fileReady:/path/to/file'
 });
+```
 
+## Recording Modes
+
+### Detect Mode (VAD-based)
+- Only records when speech is detected.
+- Uses voice activity detection to identify speech frames.
+- Pre-roll buffer captures audio before speech trigger.
+- Minimum speech duration and silence duration thresholds prevent spurious recordings.
+
+### Monitoring Mode (Always-On)
+- Records continuously in the background.
+- Respects platform constraints (foreground service on Android, background modes on iOS).
+- Chunks recordings to manage memory and storage.
+
+## Platform-Specific Implementation Notes
+
+### Android
+- Use a **foreground service** with a persistent notification for monitoring mode.
+- Request permissions: `RECORD_AUDIO` and `FOREGROUND_SERVICE` (API 31+).
+- Use `AudioRecord` for low-level PCM capture at 16 kHz.
+- Handle Doze mode: ask users to whitelist the app if continuous recording needed.
+
+### iOS
+- App Store requires explicit justification for background recording and a visible indicator.
+- Add **Background Modes → Audio** in Xcode (Target → Signing & Capabilities).
+- Use `AVAudioSession` with category `.playAndRecord` or `.record`.
+- Set `AVAudioSession.sharedInstance().setActive(true)` to enable background audio.
+
+## Performance & Memory Considerations
+- Frame-level processing (30 ms frames) requires efficient buffering.
+- Use a circular buffer (pre-roll) to keep the last N frames before trigger.
+- Compress recordings (Opus/AAC) to reduce storage footprint.
+- Monitor CPU usage during VAD processing; offload to native code.
+
+## Privacy & Compliance
+- Always show a visible indicator when recording (notification, UI badge).
+- Get explicit user consent before enabling monitoring mode.
+- Provide easy toggles to disable recording and clear stored files.
+- Consider local-only mode vs. cloud backup; show clear consent for cloud upload.
+- Provide a privacy policy explaining data handling.
