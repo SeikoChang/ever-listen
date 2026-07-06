@@ -9,8 +9,8 @@
 ## Plugin API (Dart)
 
 ```dart
-// Start recording in detect or monitoring mode
-await recorder.startRecording(mode: 'detect' | 'monitor');
+// Start recording in detect, monitor, or schedule mode
+await recorder.startRecording(mode: 'detect' | 'monitor' | 'schedule');
 
 // Stop recording
 await recorder.stopRecording();
@@ -21,12 +21,22 @@ await recorder.setSensitivity(0.6);
 // Set max storage in MB
 await recorder.setMaxStorageMb(200);
 
+// Schedule recording (for schedule mode)
+// startTime and endTime are ISO 8601 strings or Unix timestamps
+await recorder.scheduleRecording({
+  'startTime': '2026-06-25T14:00:00Z',
+  'endTime': '2026-06-25T14:30:00Z',
+  'repeat': 'once' | 'daily' | 'weekly',  // optional
+  'timezone': 'UTC',  // optional
+});
+
 // Get current status
 Map<String, dynamic>? status = await recorder.getStatus();
 
 // Listen to events
 recorder.events.listen((String event) {
-  // 'speechStarted', 'speechEnded', 'fileReady:/path/to/file'
+  // 'speechStarted', 'speechEnded', 'fileReady:/path/to/file',
+  // 'scheduleStarted', 'scheduleEnded'
 });
 ```
 
@@ -43,6 +53,13 @@ recorder.events.listen((String event) {
 - Respects platform constraints (foreground service on Android, background modes on iOS).
 - Chunks recordings to manage memory and storage.
 
+### Schedule Mode (Time-based)
+- Records during user-specified time slots.
+- Supports one-time schedules or recurring (daily, weekly).
+- Uses platform-specific schedulers (WorkManager on Android, BGTaskScheduler on iOS).
+- Can combine with VAD (record only speech) or always-on within the time slot.
+- Shows notification when scheduled recording is active.
+
 ## Platform-Specific Implementation Notes
 
 ### Android
@@ -50,12 +67,14 @@ recorder.events.listen((String event) {
 - Request permissions: `RECORD_AUDIO` and `FOREGROUND_SERVICE` (API 31+).
 - Use `AudioRecord` for low-level PCM capture at 16 kHz.
 - Handle Doze mode: ask users to whitelist the app if continuous recording needed.
+- Use **WorkManager** for reliable schedule execution even if app is closed.
 
 ### iOS
 - App Store requires explicit justification for background recording and a visible indicator.
 - Add **Background Modes → Audio** in Xcode (Target → Signing & Capabilities).
 - Use `AVAudioSession` with category `.playAndRecord` or `.record`.
 - Set `AVAudioSession.sharedInstance().setActive(true)` to enable background audio.
+- Use **BackgroundTasks** framework (BGTaskScheduler) for scheduled recording.
 
 ## Performance & Memory Considerations
 - Frame-level processing (30 ms frames) requires efficient buffering.
@@ -65,7 +84,8 @@ recorder.events.listen((String event) {
 
 ## Privacy & Compliance
 - Always show a visible indicator when recording (notification, UI badge).
-- Get explicit user consent before enabling monitoring mode.
+- Get explicit user consent before enabling monitoring mode or creating schedules.
 - Provide easy toggles to disable recording and clear stored files.
+- For Schedule mode: show clear notification when scheduled recording is active.
 - Consider local-only mode vs. cloud backup; show clear consent for cloud upload.
-- Provide a privacy policy explaining data handling.
+- Provide a privacy policy explaining data handling and scheduled recording.
