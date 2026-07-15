@@ -15,7 +15,7 @@
 ## Phase 2: Integrate WebRTC VAD (Native JNI Integration)
 - [x] Configure CMake or NDK build settings in Android module <!-- id: 9 -->
 - [x] Download/extract WebRTC VAD C source code into `android/app/src/main/cpp` <!-- id: 10 -->
-- [ ] Implement JNI binding implementation `everlisten_vad.c` <!-- id: 11 -->
+- [x] Implement JNI binding implementation `everlisten_vad.c` <!-- id: 11 -->
 - [ ] Compile and generate `libeverlisten_vad.so` for arm64-v8a and armeabi-v7a <!-- id: 12 -->
 - [ ] Verify `VADNativeBridge` functions correctly with NDK compiled library <!-- id: 13 -->
 
