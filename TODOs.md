@@ -13,7 +13,7 @@
 - [x] Execute `./gradlew test` in Android project and verify all Kotlin tests pass <!-- id: 8 -->
 
 ## Phase 2: Integrate WebRTC VAD (Native JNI Integration)
-- [ ] Configure CMake or NDK build settings in Android module <!-- id: 9 -->
+- [x] Configure CMake or NDK build settings in Android module <!-- id: 9 -->
 - [ ] Download/extract WebRTC VAD C source code into `android/app/src/main/cpp` <!-- id: 10 -->
 - [ ] Implement JNI binding implementation `everlisten_vad.c` <!-- id: 11 -->
 - [ ] Compile and generate `libeverlisten_vad.so` for arm64-v8a and armeabi-v7a <!-- id: 12 -->
