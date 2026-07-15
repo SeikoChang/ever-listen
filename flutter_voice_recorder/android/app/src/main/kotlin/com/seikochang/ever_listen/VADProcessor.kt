@@ -83,8 +83,9 @@ class WebRTCVADProcessor : VADProcessor {
     }
 
     override fun setSensitivity(sensitivity: Double) {
-        // Map 0.0-1.0 to aggressiveness 0-3
-        aggressiveness = (sensitivity * 3).toInt().coerceIn(0, 3)
+        // WebRTC aggressiveness is inverse to user-facing sensitivity:
+        // 0 accepts more speech, 3 is most selective.
+        aggressiveness = ((1.0 - sensitivity.coerceIn(0.0, 1.0)) * 3).toInt().coerceIn(0, 3)
         Log.d(TAG, "Aggressiveness set to $aggressiveness")
         
         try {
@@ -113,22 +114,4 @@ class WebRTCVADProcessor : VADProcessor {
             Log.e(TAG, "Error destroying VAD", e)
         }
     }
-}
-
-/**
- * VADNativeBridge: JNI bridge to WebRTC VAD C library.
- * TODO: Implement after compiling native library
- */
-object VADNativeBridge {
-    init {
-        try {
-            System.loadLibrary("everlisten_vad")
-        } catch (e: UnsatisfiedLinkError) {
-            // Library not available yet; will fall back to MockVADProcessor
-        }
-    }
-
-    external fun initVad(sampleRate: Int, aggressiveness: Int): Long
-    external fun processFrame(vadHandle: Long, frameBytes: ByteArray): Boolean
-    external fun destroyVad(vadHandle: Long): Boolean
 }
