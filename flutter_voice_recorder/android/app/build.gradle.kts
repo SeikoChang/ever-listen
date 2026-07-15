@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.seikochang.ever_listen"
     compileSdk = flutter.compileSdkVersion
-    // ndkVersion = flutter.ndkVersion
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -36,6 +36,12 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
         }
     }
 }
