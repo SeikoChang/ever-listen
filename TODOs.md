@@ -6,11 +6,11 @@
 - [x] Run unit tests to verify the project and plugin stubs <!-- id: 3 -->
 
 ## Phase 1: Verify & Test Android Core Logic (Mock VAD)
-- [ ] Add Android unit tests for `ScheduleStore` JSON persistence <!-- id: 4 -->
-- [ ] Add Android unit tests for `AudioFrameBuffer` circular buffer logic <!-- id: 5 -->
-- [ ] Add Android unit tests for `AudioFileWriter` WAV formatting <!-- id: 6 -->
-- [ ] Configure `app/build.gradle.kts` for Android unit testing (`test` target) <!-- id: 7 -->
-- [ ] Execute `./gradlew test` in Android project and verify all Kotlin tests pass <!-- id: 8 -->
+- [x] Add Android unit tests for `ScheduleStore` JSON persistence <!-- id: 4 -->
+- [x] Add Android unit tests for `AudioFrameBuffer` circular buffer logic <!-- id: 5 -->
+- [x] Add Android unit tests for `AudioFileWriter` WAV formatting <!-- id: 6 -->
+- [x] Configure `app/build.gradle.kts` for Android unit testing (`test` target) <!-- id: 7 -->
+- [x] Execute `./gradlew test` in Android project and verify all Kotlin tests pass <!-- id: 8 -->
 
 ## Phase 2: Integrate WebRTC VAD (Native JNI Integration)
 - [ ] Configure CMake or NDK build settings in Android module <!-- id: 9 -->
