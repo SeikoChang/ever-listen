@@ -116,4 +116,52 @@ class ScheduleStoreTest {
         val nextScheduledAlarm = shadowAlarmManager.nextScheduledAlarm
         assertNotNull(nextScheduledAlarm)
     }
+
+    @Test
+    fun testAddingSameIdReplacesStoredSchedule() {
+        val original = RecordingSchedule(
+            id = "replace-me",
+            startTimeMillis = 5000L,
+            endTimeMillis = 10000L,
+            repeat = "once",
+            timezone = "UTC",
+            mode = "detect",
+            sensitivity = 0.6,
+            maxStorageMb = 200
+        )
+        val replacement = original.copy(
+            startTimeMillis = 15000L,
+            endTimeMillis = 20000L,
+            mode = "monitor"
+        )
+
+        ScheduleStore.add(context, original)
+        ScheduleStore.add(context, replacement)
+
+        assertEquals(replacement, ScheduleStore.get(context, original.id))
+        assertEquals(1, ScheduleStore.list(context).size)
+    }
+
+    @Test
+    fun testRescheduleNextWeeklyPreservesConfiguration() {
+        val schedule = RecordingSchedule(
+            id = "weekly",
+            startTimeMillis = 1000L,
+            endTimeMillis = 2000L,
+            repeat = "weekly",
+            timezone = "Asia/Taipei",
+            mode = "schedule",
+            sensitivity = 0.8,
+            maxStorageMb = 300
+        )
+
+        ScheduleStore.add(context, schedule)
+        ScheduleStore.rescheduleNext(context, schedule.id)
+
+        val next = ScheduleStore.get(context, schedule.id)
+        assertNotNull(next)
+        assertEquals(1000L + 7L * 24L * 60L * 60L * 1000L, next?.startTimeMillis)
+        assertEquals(schedule.timezone, next?.timezone)
+        assertEquals(schedule.sensitivity, next!!.sensitivity, 0.001)
+    }
 }

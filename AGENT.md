@@ -8,7 +8,7 @@ This is a Flutter + native plugins skeleton for a cross-platform voice recorder 
 
 Features include sensitivity tuning, pre-roll buffering, limited storage enforcement, scheduled recording, and platform-specific background handling.
 
-**Current status**: Skeleton/scaffolding complete. **Priority: Android implementation (Detect + Monitoring + Schedule modes ASAP)**. iOS follows after Android is stable.
+**Current status**: Flutter scaffolding and the Android foundation are complete. Android unit-test coverage, WebRTC VAD JNI integration, reboot recovery, foreground-service compatibility checks, initial profiling, and local storage/failure-path hardening are done. **Phase 4 is in progress:** physical-device and battery validation are deferred for this iteration; remaining local background-survival review is limited to code-level checks. iOS follows once Android recording and scheduling are stable.
 
 ---
 
@@ -54,6 +54,16 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
 
 ### ✅ CI/CD
 - GitHub Actions workflow (`.github/workflows/flutter-ci.yml`) runs `flutter analyze` on PRs
+
+### ✅ Android Foundation
+- Android unit tests cover `ScheduleStore`, `AudioFrameBuffer`, and `AudioFileWriter`
+- Android local test configuration is in place and `./gradlew test` passes
+- WebRTC VAD C sources and JNI bindings are integrated
+- Native VAD libraries have been built for `arm64-v8a` and `armeabi-v7a`
+- `VADProcessorTest.kt` verifies native loading fallback to `MockVADProcessor`
+- `BootReceiver.kt` reschedules alarms after device reboot
+- Foreground-service microphone compatibility on API 30+ has been verified
+- Initial CPU and memory profiling for mock versus WebRTC VAD is complete
 
 ### ✅ License & Meta
 - MIT License
@@ -226,28 +236,34 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
 
 ---
 
-## Development Roadmap (Phases) — Refined Android-First Plan
+## Development Roadmap (Phases) — Current Status
 
-### Phase 1: Verify & Test Android Core Logic (Mock VAD) (1 week)
+### Phase 1: Verify & Test Android Core Logic (Mock VAD) — Complete
 1. Add Android unit tests for `ScheduleStore` JSON persistence and helper utilities.
 2. Add Android unit tests for `AudioFrameBuffer` circular pre-roll buffer.
 3. Add Android unit tests for `AudioFileWriter` WAV chunk and header formatting.
 4. Verify that Android local Kotlin unit tests compile and pass successfully.
 5. Verify application fallback to `MockVADProcessor` (RMS-based VAD) functions correctly without crash when JNI WebRTC VAD is missing.
 
-### Phase 2: Integrate WebRTC VAD (Native JNI Integration) (2 weeks)
+### Phase 2: Integrate WebRTC VAD (Native JNI Integration) — Complete
 1. Set up CMake/NDK build infrastructure under `flutter_voice_recorder/android/app/build.gradle.kts` and define JNI exports.
 2. Fetch and import WebRTC VAD source C code files into the project.
-3. Compile and build `libeverlisten_vad.so` for target Android ABIs (arm64-v8a, armeabi-v7a, x86_64).
-4. Connect and verify the JNI entry points via `VADNativeBridge` and write corresponding native/JNI integration tests.
+3. Compile and build `libeverlisten_vad.so` for `arm64-v8a` and `armeabi-v7a`.
+4. Connect and verify the JNI entry points via `VADNativeBridge`, including fallback coverage through `VADProcessorTest.kt`.
 
-### Phase 3: Android Background Survival & Optimization (1 week)
+### Phase 3: Android Background Survival & Optimization — Complete
 1. Register a boot receiver (`BootReceiver`) to automatically reschedule exact alarms after device reboot (using `android.intent.action.BOOT_COMPLETED`).
 2. Test microphone foreground service permission requirements on Android 11+ (API 30+).
-3. Validate WakeLocks and Wi-Fi Locks usage to prevent service suspension during monitoring mode.
-4. Perform optimization profiling on CPU utilization and battery consumption under long-running monitoring.
+3. Perform optimization profiling on CPU utilization and memory footprint for mock versus WebRTC VAD.
 
-### Phase 4: iOS Implementation & Integration (3 weeks)
+### Phase 4: Android Recording/Scheduling Completion — In Progress
+1. ✅ Harden `RecorderService.kt` lifecycle, audio reads, file finalization, and mode validation.
+2. ✅ Add Android microphone/notification permission requests and exact-alarm settings handoff.
+3. ✅ Validate schedule inputs, replace same-ID alarms, and degrade safely when exact-alarm access is unavailable.
+4. ⏸️ Physical-device validation for Detect, Monitoring, and Schedule modes is deferred for this iteration.
+5. ✅ Complete local production storage management, permission/error handling, and WakeLock cleanup checks; device/battery validation remains deferred.
+
+### Phase 5: iOS Implementation & Integration (3 weeks)
 1. Implement full MethodChannel and EventChannel method stubs in `RecorderPlugin.swift`.
 2. Implement audio capture using `AVAudioEngine` and tap input node buffer.
 3. Build and integrate WebRTC VAD static library for iOS and link via Bridging Header.
@@ -320,21 +336,21 @@ cd ../android
 # or use VS Code with Flutter extension
 ```
 
-### Step 3: Phase 1 — Implement Android Detect Mode
+### Step 3: Complete Android recording integration
 - Start in `flutter_voice_recorder/android/app/src/main/kotlin/com/seikochang/ever_listen/RecorderService.kt`
 - Implement AudioRecord frame capture loop
 - Test with simple log-to-file stub first
 
-### Step 4: Integrate WebRTC VAD
-- Download or clone WebRTC audio processing: https://github.com/google/webrtc-audio-processing
-- Build native library (.so) for Android
-- Create JNI wrapper in `VADNativeBridge.kt`
+### Step 4: Finish Android plugin and scheduling integration
+- Connect `RecorderPlugin.kt` to the service and event channel
+- Implement `ScheduleRecorderWorker.kt` and recurring schedule handling
+- Validate reboot recovery and foreground-service behavior on device
 
-### Step 5: Phase 2 — Add Monitoring Mode
+### Step 5: Complete Android modes and storage behavior
 - Refactor RecorderService to support always-on mode
 - Set up foreground service
 
-### Step 6: Phase 3 — Add Schedule Mode (do NOT wait until later!)
+### Step 6: Add and validate Schedule mode
 - Add WorkManager to `build.gradle`
 - Implement ScheduleRecorderWorker
 - Connect to RecorderPlugin
@@ -349,7 +365,7 @@ flutter run  # connects to Android device/emulator
 - Tune VAD parameters based on real recordings
 - Optimize battery impact
 - Stress test schedules
-- Move to iOS (Phase 5) only after Android is stable and tested
+- Move to iOS (Phase 5) only after Android recording and scheduling are stable and tested
 
 ---
 

@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.IBinder
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import kotlin.concurrent.thread
 import java.io.File
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class RecorderService : Service() {
     private var audioRecord: AudioRecord? = null
-    private var isRecording = false
+    @Volatile private var isRecording = false
     private var recordingThread: Thread? = null
     private var vadProcessor: VADProcessor? = null
     private var frameBuffer: AudioFrameBuffer? = null
@@ -40,6 +41,7 @@ class RecorderService : Service() {
     private var currentOutputFile: File? = null
     private var outputFileWriter: AudioFileWriter? = null
     private var scheduledSession = false
+    private var wakeLock: PowerManager.WakeLock? = null
     
     private val handler = Handler(Looper.getMainLooper())
     private val TAG = "RecorderService"
@@ -49,11 +51,12 @@ class RecorderService : Service() {
         private const val FRAME_SIZE_MS = 30
         private const val FRAME_SIZE_SAMPLES = (SAMPLE_RATE * FRAME_SIZE_MS) / 1000  // 480 samples
         private const val FRAME_SIZE_BYTES = FRAME_SIZE_SAMPLES * 2  // 16-bit = 2 bytes
-        private val BUFFER_SIZE = AudioRecord.getMinBufferSize(
+        private val MIN_BUFFER_SIZE = AudioRecord.getMinBufferSize(
             SAMPLE_RATE,
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT
         )
+        private val BUFFER_SIZE = maxOf(FRAME_SIZE_BYTES * 2, MIN_BUFFER_SIZE.takeIf { it > 0 } ?: FRAME_SIZE_BYTES * 2)
         private const val PRE_ROLL_DURATION_MS = 1500  // 1.5 seconds pre-roll buffer
         private const val MONITOR_CHUNK_DURATION_MS = 60_000L
         private val eventSinkRef = AtomicReference<EventChannel.EventSink?>()
@@ -82,13 +85,14 @@ class RecorderService : Service() {
         }
 
         private fun updateStorageUsed(context: Context) {
-            val outputDir = File(context.getExternalFilesDir(null), "recordings")
-            statusStorageUsedMb = outputDir.listFiles()
-                ?.filter { it.isFile }
-                ?.sumOf { it.length() }
-                ?.toDouble()
-                ?.div(1024.0 * 1024.0) ?: 0.0
+            statusStorageUsedMb = RecordingStorage(recordingDirectory(context)).totalBytes()
+                .toDouble()
+                .div(1024.0 * 1024.0)
         }
+
+        private fun recordingDirectory(context: Context): File =
+            context.getExternalFilesDir(null)?.resolve("recordings")
+                ?: context.filesDir.resolve("recordings")
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -112,13 +116,13 @@ class RecorderService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val action = intent?.action ?: return START_STICKY
+        val action = intent?.action ?: return START_NOT_STICKY
         
         when (action) {
             "START_RECORDING" -> {
                 mode = intent.getStringExtra("mode") ?: "detect"
-                sensitivity = intent.getDoubleExtra("sensitivity", 0.6)
-                maxStorageMb = intent.getIntExtra("maxStorageMb", maxStorageMb)
+                sensitivity = intent.getDoubleExtra("sensitivity", 0.6).coerceIn(0.0, 1.0)
+                maxStorageMb = intent.getIntExtra("maxStorageMb", maxStorageMb).coerceAtLeast(1)
                 scheduledSession = intent.getBooleanExtra("scheduled", false)
                 startRecording()
             }
@@ -127,12 +131,12 @@ class RecorderService : Service() {
                 stopRecording()
             }
             "SET_SENSITIVITY" -> {
-                sensitivity = intent.getDoubleExtra("sensitivity", 0.6)
+                sensitivity = intent.getDoubleExtra("sensitivity", 0.6).coerceIn(0.0, 1.0)
                 vadProcessor?.setSensitivity(sensitivity)
                 statusSensitivity = sensitivity
             }
             "SET_MAX_STORAGE" -> {
-                maxStorageMb = intent.getIntExtra("maxStorageMb", 200)
+                maxStorageMb = intent.getIntExtra("maxStorageMb", 200).coerceAtLeast(1)
                 statusMaxStorageMb = maxStorageMb
                 enforceStorageLimit()
             }
@@ -148,15 +152,30 @@ class RecorderService : Service() {
         }
 
         Log.d(TAG, "Starting recording in $mode mode, sensitivity: $sensitivity")
+        if (mode !in setOf("detect", "monitor", "schedule")) {
+            emitEvent("error", mapOf("message" to "Unsupported recording mode: $mode"))
+            stopSelf()
+            return
+        }
+
+        frameBuffer?.clear()
+        currentOutputFile = null
+        statusCurrentFilePath = ""
         statusRunning = true
         statusMode = mode
         statusSensitivity = sensitivity
         statusMaxStorageMb = maxStorageMb
         
         // Create output directory
-        val outputDir = File(getExternalFilesDir(null), "recordings")
-        if (!outputDir.exists()) {
-            outputDir.mkdirs()
+        val outputDir = recordingDirectory(this)
+        val storage = RecordingStorage(outputDir)
+        try {
+            storage.ensureDirectory()
+        } catch (e: IllegalArgumentException) {
+            statusRunning = false
+            emitEvent("error", mapOf("message" to e.message))
+            stopSelf()
+            return
         }
         
         // Initialize audio file writer
@@ -169,6 +188,7 @@ class RecorderService : Service() {
         
         // Show foreground notification
         showNotification()
+        acquireWakeLock()
         
         // Initialize AudioRecord
         try {
@@ -184,8 +204,9 @@ class RecorderService : Service() {
                 Log.e(TAG, "AudioRecord initialization failed")
                 statusRunning = false
                 outputFileWriter = null
-                stopForeground(true)
-                emitEvent("error", mapOf("message" to "AudioRecord initialization failed"))
+            stopForeground(true)
+            releaseWakeLock()
+            emitEvent("error", mapOf("message" to "AudioRecord initialization failed"))
                 return
             }
             
@@ -211,6 +232,7 @@ class RecorderService : Service() {
             audioRecord = null
             outputFileWriter = null
             stopForeground(true)
+            releaseWakeLock()
             emitEvent("error", mapOf("message" to e.message))
         }
     }
@@ -225,9 +247,14 @@ class RecorderService : Service() {
         try {
             while (isRecording && audioRecord != null) {
                 // Read frame from microphone
-                val bytesRead = audioRecord!!.read(frameBuffer, 0, FRAME_SIZE_BYTES)
-                
+                val bytesRead = audioRecord!!.read(frameBuffer, 0, FRAME_SIZE_BYTES, AudioRecord.READ_BLOCKING)
+
                 if (bytesRead != FRAME_SIZE_BYTES) {
+                    if (bytesRead < 0) {
+                        Log.e(TAG, "AudioRecord read failed: $bytesRead")
+                        emitEvent("error", mapOf("message" to "AudioRecord read failed", "code" to bytesRead))
+                        break
+                    }
                     Log.w(TAG, "Expected $FRAME_SIZE_BYTES bytes, got $bytesRead")
                     continue
                 }
@@ -339,8 +366,8 @@ class RecorderService : Service() {
             recordingThread?.join(5000)  // timeout 5 seconds
             recordingThread = null
             
-            // Close output file
-            outputFileWriter?.closeCurrentFile()
+            // Finalize any open output file and notify Flutter.
+            rotateCurrentFile()
             outputFileWriter = null
             currentOutputFile = null
             statusCurrentFilePath = ""
@@ -349,12 +376,14 @@ class RecorderService : Service() {
             
             // Stop foreground notification
             stopForeground(true)
+            releaseWakeLock()
             
             emitEvent("recordingStopped", mapOf())
             if (scheduledSession) {
                 emitEvent("scheduleEnded", mapOf("mode" to mode))
                 scheduledSession = false
             }
+            stopSelf()
         } catch (e: Exception) {
             Log.e(TAG, "Error stopping recording", e)
             emitEvent("error", mapOf("message" to e.message))
@@ -412,27 +441,30 @@ class RecorderService : Service() {
     }
 
     private fun enforceStorageLimit() {
-        val outputDir = File(getExternalFilesDir(null), "recordings")
-        val files = outputDir.listFiles()
-            ?.filter { it.isFile }
-            ?.sortedBy { it.lastModified() }
-            ?.toMutableList() ?: return
-
-        var totalBytes = files.sumOf { it.length() }
-        val maxBytes = maxStorageMb.toLong() * 1024L * 1024L
-
-        while (totalBytes > maxBytes && files.isNotEmpty()) {
-            val oldest = files.removeAt(0)
-            val size = oldest.length()
-            if (oldest.absolutePath != currentOutputFile?.absolutePath && oldest.delete()) {
-                totalBytes -= size
-                emitEvent("storagePruned", mapOf("filePath" to oldest.absolutePath))
-            } else {
-                break
-            }
+        val storage = RecordingStorage(recordingDirectory(this))
+        storage.prune(maxStorageMb, currentOutputFile).forEach { file ->
+            emitEvent("storagePruned", mapOf("filePath" to file.absolutePath))
         }
+        statusStorageUsedMb = storage.totalBytes().toDouble() / (1024.0 * 1024.0)
+    }
 
-        statusStorageUsedMb = totalBytes.toDouble() / (1024.0 * 1024.0)
+    private fun acquireWakeLock() {
+        if (wakeLock?.isHeld == true) return
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK,
+            "EverListen::RecorderService"
+        ).apply {
+            setReferenceCounted(false)
+            acquire()
+        }
+    }
+
+    private fun releaseWakeLock() {
+        wakeLock?.let { lock ->
+            if (lock.isHeld) lock.release()
+        }
+        wakeLock = null
     }
 
     override fun onDestroy() {
@@ -441,6 +473,9 @@ class RecorderService : Service() {
         if (isRecording) {
             stopRecording()
         }
+        (vadProcessor as? WebRTCVADProcessor)?.destroy()
+        vadProcessor = null
+        releaseWakeLock()
         statusRunning = false
     }
 }

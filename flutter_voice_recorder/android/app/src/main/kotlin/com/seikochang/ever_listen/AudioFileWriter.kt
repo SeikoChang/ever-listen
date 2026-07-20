@@ -26,6 +26,10 @@ class AudioFileWriter(
 
     fun createNewFile(filename: String): File {
         closeCurrentFile()
+
+        require(outputDir.exists() || outputDir.mkdirs()) {
+            "Unable to create output directory: ${outputDir.absolutePath}"
+        }
         
         val file = File(outputDir, filename)
         currentFile = file
@@ -40,6 +44,9 @@ class AudioFileWriter(
     }
 
     fun writeFrame(frameBytes: ByteArray) {
+        require(frameBytes.size <= Int.MAX_VALUE - currentFileBytesWritten) {
+            "WAV file exceeds supported PCM data size"
+        }
         val writer = currentFileWriter ?: return
         try {
             writer.write(frameBytes)

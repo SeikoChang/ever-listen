@@ -25,6 +25,11 @@ class RecorderPlugin {
     await _channel.invokeMethod('stopRecording');
   }
 
+  Future<Map<String, dynamic>> requestPermissions() async {
+    final res = await _channel.invokeMethod('requestPermissions');
+    return Map<String, dynamic>.from(res as Map);
+  }
+
   Future<void> setSensitivity(double s) async {
     await _channel.invokeMethod('setSensitivity', {'sensitivity': s});
   }

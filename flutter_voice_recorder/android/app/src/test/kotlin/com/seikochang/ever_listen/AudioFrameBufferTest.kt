@@ -41,4 +41,9 @@ class AudioFrameBufferTest {
         assertEquals(0, buffer.size())
         assertTrue(buffer.getFrames().isEmpty())
     }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun rejectsZeroCapacity() {
+        AudioFrameBuffer(maxFrames = 0)
+    }
 }

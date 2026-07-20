@@ -7,6 +7,10 @@ import android.util.Log
  * Maintains the last N frames for pre-roll capture (e.g., 1.5s of audio before speech detection).
  */
 class AudioFrameBuffer(private val maxFrames: Int) {
+    init {
+        require(maxFrames > 0) { "maxFrames must be greater than zero" }
+    }
+
     private val frames = mutableListOf<ByteArray>()
     private val TAG = "AudioFrameBuffer"
 

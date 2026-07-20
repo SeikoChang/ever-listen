@@ -26,7 +26,20 @@
 - [x] Verify microphone foreground service type compatibility on API 30+ <!-- id: 16 -->
 - [x] Profile memory usage and CPU footprint of `MockVADProcessor` vs `WebRTCVADProcessor` <!-- id: 17 -->
 
-## Phase 4: iOS Implementation & Integration
+## Phase 4: Android Recording/Scheduling Completion
+- [x] Harden `RecorderService` lifecycle, frame reads, file finalization, and mode validation <!-- id: 23 -->
+- [x] Add Android microphone/notification permission request bridge <!-- id: 24 -->
+- [x] Validate recording mode, sensitivity, storage, schedule repeat values, and future schedule times <!-- id: 25 -->
+- [x] Handle exact-alarm permission and provide a settings handoff on Android 12+ <!-- id: 26 -->
+- [x] Replace existing schedule alarms when updating a schedule with the same ID <!-- id: 27 -->
+- [x] Fall back to inexact alarms during boot recovery when exact-alarm access is unavailable <!-- id: 28 -->
+- [x] Add failure-path tests for invalid pre-roll capacity and schedule replacement/weekly recurrence <!-- id: 31 -->
+- [x] Extract and test recording storage pruning; add WakeLock acquire/release cleanup <!-- id: 32 -->
+- [x] Run the complete Android unit-test suite successfully with Android Studio's JDK <!-- id: 33 -->
+- [ ] Complete physical-device validation for Detect, Monitoring, and Schedule modes *(deferred for this iteration)* <!-- id: 29 -->
+- [ ] Add production storage, battery/background survival, and failure-path validation <!-- id: 30 -->
+
+## Phase 5: iOS Implementation & Integration
 - [ ] Implement MethodChannel and EventChannel stubs in `RecorderPlugin.swift` <!-- id: 18 -->
 - [ ] Implement Swift `AVAudioEngine` record and tap functionality <!-- id: 19 -->
 - [ ] Build and link WebRTC VAD static library for iOS build <!-- id: 20 -->
