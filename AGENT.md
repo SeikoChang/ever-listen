@@ -8,7 +8,7 @@ This is a Flutter + native plugins skeleton for a cross-platform voice recorder 
 
 Features include sensitivity tuning, pre-roll buffering, limited storage enforcement, scheduled recording, and platform-specific background handling.
 
-**Current status**: Flutter scaffolding and the Android foundation are complete. Android unit-test coverage, WebRTC VAD JNI integration, reboot recovery, foreground-service compatibility checks, initial profiling, and local storage/failure-path hardening are done. **Phase 4 is in progress:** physical-device and battery validation are deferred for this iteration; remaining local background-survival review is limited to code-level checks. iOS follows once Android recording and scheduling are stable.
+**Current status**: Flutter scaffolding and the Android foundation are complete. Android unit-test coverage, WebRTC VAD JNI integration, reboot recovery, foreground-service compatibility checks, initial profiling, and local storage/failure-path hardening are done. Android device and battery validation are deferred for this iteration. **Phase 5 iOS implementation is in progress:** channel parity, initial AVAudioEngine capture, permission handling, audio output, persisted schedule CRUD, and a BGTaskScheduler dispatcher are implemented; iOS VAD linking and full background/device validation remain.
 
 ---
 

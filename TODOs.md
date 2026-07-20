@@ -40,7 +40,7 @@
 - [ ] Add production storage, battery/background survival, and failure-path validation <!-- id: 30 -->
 
 ## Phase 5: iOS Implementation & Integration
-- [ ] Implement MethodChannel and EventChannel stubs in `RecorderPlugin.swift` <!-- id: 18 -->
-- [ ] Implement Swift `AVAudioEngine` record and tap functionality <!-- id: 19 -->
+- [x] Implement MethodChannel and EventChannel parity in `RecorderPlugin.swift` <!-- id: 18 -->
+- [x] Implement initial Swift `AVAudioEngine` record/tap and file output path <!-- id: 19 -->
 - [ ] Build and link WebRTC VAD static library for iOS build <!-- id: 20 -->
-- [ ] Implement `BGTaskScheduler` interface in iOS plugin to support排程錄音 <!-- id: 21 -->
+- [x] Implement initial `BGTaskScheduler` dispatcher for persisted schedules <!-- id: 21 -->
