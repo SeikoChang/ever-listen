@@ -36,6 +36,7 @@ android {
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
+            isReturnDefaultValues = true
         }
     }
 
@@ -61,4 +62,13 @@ dependencies {
 
 flutter {
     source = "../.."
+}
+
+tasks.configureEach {
+    if (name == "packageDebugUnitTestForUnitTest") {
+        dependsOn("copyFlutterAssetsDebug")
+    }
+    if (name == "packageReleaseUnitTestForUnitTest") {
+        dependsOn("copyFlutterAssetsRelease")
+    }
 }

@@ -49,7 +49,7 @@ class RecorderService : Service() {
         private const val FRAME_SIZE_MS = 30
         private const val FRAME_SIZE_SAMPLES = (SAMPLE_RATE * FRAME_SIZE_MS) / 1000  // 480 samples
         private const val FRAME_SIZE_BYTES = FRAME_SIZE_SAMPLES * 2  // 16-bit = 2 bytes
-        private const val BUFFER_SIZE = AudioRecord.getMinBufferSize(
+        private val BUFFER_SIZE = AudioRecord.getMinBufferSize(
             SAMPLE_RATE,
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT

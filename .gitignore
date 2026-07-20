@@ -19,3 +19,4 @@ flutter_voice_recorder/build/
 # Python
 __pycache__/
 *.pyc
+.aider*
