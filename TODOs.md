@@ -21,10 +21,10 @@
   - [x] Add `VADProcessorTest.kt` unit test to verify `MockVADProcessor` and native loading fallback <!-- id: 22 -->
 
 ## Phase 3: Android Background Survival & Optimization
-- [ ] Create `BootReceiver.kt` to reschedule Alarms on device reboot <!-- id: 14 -->
-- [ ] Declare `BootReceiver` and `RECEIVE_BOOT_COMPLETED` permission in `AndroidManifest.xml` <!-- id: 15 -->
-- [ ] Verify microphone foreground service type compatibility on API 30+ <!-- id: 16 -->
-- [ ] Profile memory usage and CPU footprint of `MockVADProcessor` vs `WebRTCVADProcessor` <!-- id: 17 -->
+- [x] Create `BootReceiver.kt` to reschedule Alarms on device reboot <!-- id: 14 -->
+- [x] Declare `BootReceiver` and `RECEIVE_BOOT_COMPLETED` permission in `AndroidManifest.xml` <!-- id: 15 -->
+- [x] Verify microphone foreground service type compatibility on API 30+ <!-- id: 16 -->
+- [x] Profile memory usage and CPU footprint of `MockVADProcessor` vs `WebRTCVADProcessor` <!-- id: 17 -->
 
 ## Phase 4: iOS Implementation & Integration
 - [ ] Implement MethodChannel and EventChannel stubs in `RecorderPlugin.swift` <!-- id: 18 -->

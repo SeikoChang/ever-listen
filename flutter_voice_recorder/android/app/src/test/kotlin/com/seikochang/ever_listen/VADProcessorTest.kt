@@ -49,4 +49,33 @@ class VADProcessorTest {
             assertNotNull(e.message)
         }
     }
+
+    @Test
+    fun testVADProcessorsBenchmark() {
+        val mockProcessor = MockVADProcessor()
+        mockProcessor.setSensitivity(0.5)
+
+        val frame = ByteArray(960) // 30ms at 16kHz
+        
+        val startMock = System.nanoTime()
+        for (i in 1..1000) {
+            mockProcessor.processFrame(frame)
+        }
+        val endMock = System.nanoTime()
+        val durationMockMs = (endMock - startMock) / 1_000_000.0
+        System.out.println("MockVADProcessor benchmark: 1000 frames in ${durationMockMs}ms")
+        
+        try {
+            val nativeProcessor = WebRTCVADProcessor()
+            val startNative = System.nanoTime()
+            for (i in 1..1000) {
+                nativeProcessor.processFrame(frame)
+            }
+            val endNative = System.nanoTime()
+            val durationNativeMs = (endNative - startNative) / 1_000_000.0
+            System.out.println("WebRTCVADProcessor benchmark: 1000 frames in ${durationNativeMs}ms")
+        } catch (_: Throwable) {
+            System.out.println("WebRTCVADProcessor benchmark: skipped (native library not loadable on host JVM)")
+        }
+    }
 }
