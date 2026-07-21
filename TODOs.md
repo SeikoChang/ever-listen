@@ -44,3 +44,20 @@
 - [x] Implement initial Swift `AVAudioEngine` record/tap and file output path <!-- id: 19 -->
 - [ ] Build and link WebRTC VAD static library for iOS build <!-- id: 20 -->
 - [x] Implement initial `BGTaskScheduler` dispatcher for persisted schedules <!-- id: 21 -->
+
+## P0: Critical Bugs
+- [ ] Fix iOS `RecorderPlugin.swift` line 464 string interpolation bug — filename produces literal `(mode)_(Int(...)).caf` instead of interpolated values, causing all recordings to overwrite each other <!-- id: 34 -->
+
+## Phase 6: Device Validation (Both Platforms)
+- [ ] Android physical-device validation: Detect, Monitoring, Schedule modes across API 28-34 <!-- id: 35 -->
+- [ ] Android battery/Doze/OEM testing (Samsung, Google, OnePlus) <!-- id: 36 -->
+- [ ] iOS physical-device validation: Detect, Monitoring, Schedule modes (iOS 14+) <!-- id: 37 -->
+- [ ] iOS BGTaskScheduler dispatch reliability testing <!-- id: 38 -->
+- [ ] iOS AVAudioSession interruption handling (phone calls, alarms) <!-- id: 39 -->
+
+## Phase 7: Production Hardening
+- [ ] Cross-platform integration tests for feature parity <!-- id: 40 -->
+- [ ] Add structured logging (File + console) on both platforms <!-- id: 41 -->
+- [ ] Handle edge cases: missing microphone, low disk space, native lib failures <!-- id: 42 -->
+- [ ] iOS App Store compliance: privacy policy, recording indicator, background audio justification <!-- id: 43 -->
+- [ ] UI polish: VU meter, file list/playback, settings screen <!-- id: 44 -->
