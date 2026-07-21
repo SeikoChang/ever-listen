@@ -61,3 +61,35 @@
 - [ ] Handle edge cases: missing microphone, low disk space, native lib failures <!-- id: 42 -->
 - [ ] iOS App Store compliance: privacy policy, recording indicator, background audio justification <!-- id: 43 -->
 - [ ] UI polish: VU meter, file list/playback, settings screen <!-- id: 44 -->
+
+## Phase 8: Android Core Test Coverage (P0)
+
+### RecorderPlugin.kt Tests (Robolectric)
+- [ ] Add unit tests for `handleStartRecording()` — valid mode, invalid mode, permission denied <!-- id: 45 -->
+- [ ] Add unit tests for `handleStopRecording()` — success and failure paths <!-- id: 46 -->
+- [ ] Add unit tests for `handleScheduleRecording()` — valid input, invalid startTime, invalid endTime, invalid repeat <!-- id: 47 -->
+- [ ] Add unit tests for `handleCancelSchedule()` — valid id, missing id <!-- id: 48 -->
+- [ ] Add unit tests for `handleGetSchedules()` — empty and populated schedule list <!-- id: 49 -->
+- [ ] Add unit tests for `handleRequestPermissions()` — granted and denied scenarios <!-- id: 50 -->
+- [ ] Add unit tests for `handleGetStatus()` — returns status snapshot with schedules <!-- id: 51 -->
+- [ ] Add unit tests for `handleSetSensitivity()` and `handleSetMaxStorage()` <!-- id: 52 -->
+
+### RecorderService.kt Tests
+- [ ] Add unit tests for `startRecording()` / `stopRecording()` lifecycle with mock AudioRecord <!-- id: 53 -->
+- [ ] Add unit tests for detect mode: speech detection, pre-roll write, silence timeout, file close <!-- id: 54 -->
+- [ ] Add unit tests for monitor mode: continuous write, chunk rotation at 60s <!-- id: 55 -->
+- [ ] Add unit tests for schedule mode: scheduledSession flag, scheduleEnded event <!-- id: 56 -->
+- [ ] Add unit tests for `rotateCurrentFile()` — fileReady event emission <!-- id: 57 -->
+- [ ] Add unit tests for `enforceStorageLimit()` — storage pruning triggers <!-- id: 58 -->
+- [ ] Add unit tests for invalid mode in `startRecording()` — error event + stopSelf <!-- id: 59 -->
+
+## Phase 9: Existing Test Gap Fill (P1)
+- [ ] VADProcessorTest: add sensitivity 0.0/1.0 edge cases, dynamic sensitivity switch <!-- id: 60 -->
+- [ ] RecordingStorageTest: add `totalBytes()`, `ensureDirectory()`, empty directory <!-- id: 61 -->
+- [ ] ScheduleStoreTest: add invalid input validation, timezone edge cases <!-- id: 62 -->
+- [ ] BootReceiverTest: add recurring schedule rescheduling <!-- id: 63 -->
+
+## Phase 10: iOS Test Coverage (P1)
+- [ ] Add `RecorderPlugin` unit tests — MethodChannel handlers (start/stop/schedule) <!-- id: 64 -->
+- [ ] Add schedule normalization tests (once/daily/weekly) <!-- id: 65 -->
+- [ ] Add `AudioEngineRecorder` initialization and frame processing tests <!-- id: 66 -->
