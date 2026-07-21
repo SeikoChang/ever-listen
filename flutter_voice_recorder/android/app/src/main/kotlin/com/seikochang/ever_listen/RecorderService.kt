@@ -19,6 +19,7 @@ import androidx.core.app.NotificationCompat
 import kotlin.concurrent.thread
 import java.io.File
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import io.flutter.plugin.common.EventChannel
 import java.util.concurrent.atomic.AtomicReference
 
@@ -31,6 +32,26 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class RecorderService : Service() {
     private var audioRecord: AudioRecord? = null
+    @VisibleForTesting
+    var audioRecordFactory: () -> AudioRecord = {
+        AudioRecord(
+            MediaRecorder.AudioSource.MIC,
+            SAMPLE_RATE,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_16BIT,
+            BUFFER_SIZE
+        )
+    }
+    @VisibleForTesting
+    var audioRecordFactory: () -> AudioRecord = {
+        AudioRecord(
+            MediaRecorder.AudioSource.MIC,
+            SAMPLE_RATE,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_16BIT,
+            BUFFER_SIZE
+        )
+    }
     @Volatile private var isRecording = false
     private var recordingThread: Thread? = null
     private var vadProcessor: VADProcessor? = null
@@ -192,13 +213,7 @@ class RecorderService : Service() {
         
         // Initialize AudioRecord
         try {
-            audioRecord = AudioRecord(
-                MediaRecorder.AudioSource.MIC,
-                SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-                BUFFER_SIZE
-            )
+            audioRecord = audioRecordFactory()
             
             if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
                 Log.e(TAG, "AudioRecord initialization failed")
