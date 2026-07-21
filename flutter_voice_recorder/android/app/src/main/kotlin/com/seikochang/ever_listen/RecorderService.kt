@@ -42,16 +42,6 @@ class RecorderService : Service() {
             BUFFER_SIZE
         )
     }
-    @VisibleForTesting
-    var audioRecordFactory: () -> AudioRecord = {
-        AudioRecord(
-            MediaRecorder.AudioSource.MIC,
-            SAMPLE_RATE,
-            AudioFormat.CHANNEL_IN_MONO,
-            AudioFormat.ENCODING_PCM_16BIT,
-            BUFFER_SIZE
-        )
-    }
     @Volatile private var isRecording = false
     private var recordingThread: Thread? = null
     private var vadProcessor: VADProcessor? = null
