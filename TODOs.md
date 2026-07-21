@@ -46,7 +46,7 @@
 - [x] Implement initial `BGTaskScheduler` dispatcher for persisted schedules <!-- id: 21 -->
 
 ## P0: Critical Bugs
-- [ ] Fix iOS `RecorderPlugin.swift` line 464 string interpolation bug — filename produces literal `(mode)_(Int(...)).caf` instead of interpolated values, causing all recordings to overwrite each other <!-- id: 34 -->
+- [x] Fix iOS `RecorderPlugin.swift` line 464 string interpolation bug — filename produces literal `(mode)_(Int(...)).caf` instead of interpolated values, causing all recordings to overwrite each other <!-- id: 34 -->
 
 ## Phase 6: Device Validation (Both Platforms)
 - [ ] Android physical-device validation: Detect, Monitoring, Schedule modes across API 28-34 <!-- id: 35 -->

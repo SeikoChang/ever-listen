@@ -461,7 +461,7 @@ private final class AudioEngineRecorder {
 
   private func openFileIfNeeded(format: AVAudioFormat) throws {
     guard outputFile == nil else { return }
-    let name = "(mode)_(Int(Date().timeIntervalSince1970 * 1000)).caf"
+    let name = "\(mode)_\(Int(Date().timeIntervalSince1970 * 1000)).caf"
     let url = directory.appendingPathComponent(name)
     outputFile = try AVAudioFile(forWriting: url, settings: format.settings)
     currentFilePath = url.path
