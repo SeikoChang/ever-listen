@@ -8,6 +8,7 @@ import android.os.Build
 import android.provider.Settings
 import android.app.Activity
 import android.net.Uri
+import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
