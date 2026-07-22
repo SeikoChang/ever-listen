@@ -1,8 +1,6 @@
 package com.seikochang.ever_listen
 
 import android.content.Context
-import io.flutter.plugin.common.BinaryMessenger
-import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import org.junit.After
@@ -21,7 +19,6 @@ class RecorderPluginTest {
 
     private lateinit var context: Context
     private lateinit var plugin: RecorderPlugin
-    private lateinit var methodChannel: MethodChannel
 
     @Before
     fun setUp() {
@@ -29,22 +26,9 @@ class RecorderPluginTest {
         context.getSharedPreferences("ever_listen_schedules", Context.MODE_PRIVATE)
             .edit().clear().apply()
 
-        val messenger = mock<BinaryMessenger>()
-        methodChannel = spy(MethodChannel(messenger, "ever_listen/recorder"))
-        val eventChannel = spy(EventChannel(messenger, "ever_listen/events"))
-
-        doAnswer { invocation ->
-            val handler = invocation.getArgument<((MethodCall, MethodChannel.Result) -> Unit)?>(0)
-            handler
-        }.whenever(methodChannel).setMethodCallHandler(any())
-        doAnswer { invocation ->
-            val handler = invocation.getArgument<EventChannel.StreamHandler?>(0)
-            handler
-        }.whenever(eventChannel).setStreamHandler(any())
-
         val binding = mock<io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding>()
         whenever(binding.applicationContext).thenReturn(context)
-        whenever(binding.binaryMessenger).thenReturn(messenger)
+        whenever(binding.binaryMessenger).thenReturn(mock())
 
         plugin = RecorderPlugin()
         plugin.onAttachedToEngine(binding)
@@ -52,8 +36,7 @@ class RecorderPluginTest {
 
     @After
     fun tearDown() {
-        val binding = mock<io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding>()
-        plugin.onDetachedFromEngine(binding)
+        plugin.onDetachedFromEngine(mock())
     }
 
     // ==================== startRecording (TODO #45) ====================
@@ -63,7 +46,7 @@ class RecorderPluginTest {
         val result = captureResult()
         plugin.onMethodCall(MethodCall("startRecording", mapOf("mode" to "detect")), result)
         assertTrue(result.called)
-        assertEquals("started", (result.value as Map)["status"])
+        assertEquals("started", (result.value as Map<*, *>)["status"])
     }
 
     @Test
@@ -89,7 +72,7 @@ class RecorderPluginTest {
         val result = captureResult()
         plugin.onMethodCall(MethodCall("stopRecording"), result)
         assertTrue(result.called)
-        assertEquals("stopped", (result.value as Map)["status"])
+        assertEquals("stopped", (result.value as Map<*, *>)["status"])
     }
 
     // ==================== scheduleRecording (TODO #47) ====================
@@ -222,7 +205,7 @@ class RecorderPluginTest {
         val result = captureResult()
         plugin.onMethodCall(MethodCall("setSensitivity", mapOf("sensitivity" to 0.8)), result)
         assertTrue(result.called)
-        assertEquals(0.8, (result.value as Map)["sensitivity"])
+        assertEquals(0.8, (result.value as Map<*, *>)["sensitivity"])
     }
 
     @Test
@@ -230,7 +213,7 @@ class RecorderPluginTest {
         val result = captureResult()
         plugin.onMethodCall(MethodCall("setMaxStorageMb", mapOf("maxStorageMb" to 500)), result)
         assertTrue(result.called)
-        assertEquals(500, (result.value as Map)["maxStorageMb"])
+        assertEquals(500, (result.value as Map<*, *>)["maxStorageMb"])
     }
 
     @Test

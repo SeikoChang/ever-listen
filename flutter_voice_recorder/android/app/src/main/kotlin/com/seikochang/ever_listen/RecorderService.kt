@@ -46,12 +46,12 @@ class RecorderService : Service() {
     private var recordingThread: Thread? = null
     private var vadProcessor: VADProcessor? = null
     private var frameBuffer: AudioFrameBuffer? = null
-    private var mode: String = "detect"
-    private var sensitivity: Double = 0.6
-    private var maxStorageMb: Int = 200
+    @VisibleForTesting var mode: String = "detect"
+    @VisibleForTesting var sensitivity: Double = 0.6
+    @VisibleForTesting var maxStorageMb: Int = 200
     private var currentOutputFile: File? = null
     private var outputFileWriter: AudioFileWriter? = null
-    private var scheduledSession = false
+    @VisibleForTesting var scheduledSession = false
     private var wakeLock: PowerManager.WakeLock? = null
     
     private val handler = Handler(Looper.getMainLooper())
@@ -156,7 +156,7 @@ class RecorderService : Service() {
         return START_STICKY
     }
 
-    private fun startRecording() {
+    @VisibleForTesting internal fun startRecording() {
         if (isRecording) {
             Log.w(TAG, "Recording already in progress")
             return
@@ -352,7 +352,7 @@ class RecorderService : Service() {
         }
     }
 
-    private fun stopRecording() {
+    @VisibleForTesting internal fun stopRecording() {
         if (!isRecording) {
             Log.w(TAG, "Recording not in progress")
             return
@@ -445,7 +445,7 @@ class RecorderService : Service() {
         statusCurrentFilePath = ""
     }
 
-    private fun enforceStorageLimit() {
+    @VisibleForTesting internal fun enforceStorageLimit() {
         val storage = RecordingStorage(recordingDirectory(this))
         storage.prune(maxStorageMb, currentOutputFile).forEach { file ->
             emitEvent("storagePruned", mapOf("filePath" to file.absolutePath))

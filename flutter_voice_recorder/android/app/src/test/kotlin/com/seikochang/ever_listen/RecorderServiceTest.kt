@@ -2,8 +2,6 @@ package com.seikochang.ever_listen
 
 import android.content.Context
 import android.media.AudioRecord
-import android.media.AudioFormat
-import android.media.MediaRecorder
 import io.flutter.plugin.common.EventChannel
 import org.junit.Assert.*
 import org.junit.After
@@ -16,7 +14,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import java.io.File
 import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.atomic.AtomicBoolean
 import org.mockito.kotlin.*
 
 @RunWith(RobolectricTestRunner::class)
@@ -25,20 +22,19 @@ class RecorderServiceTest {
 
     private lateinit var context: Context
     private lateinit var service: RecorderService
+    private lateinit var mockAudioRecord: AudioRecord
     private var capturedEvents: MutableList<Map<*, *>> = mutableListOf()
     private val frameQueue = ArrayBlockingQueue<ByteArray>(200)
-    private val readExhausted = AtomicBoolean(false)
 
     @Before
     fun setUp() {
         context = RuntimeEnvironment.getApplication()
         capturedEvents.clear()
         frameQueue.clear()
-        readExhausted.set(false)
 
-        // Grant RECORD_AUDIO permission
-        val shadowApp = shadowOf(context as android.app.Application)
-        shadowApp.setPermission(android.Manifest.permission.RECORD_AUDIO, 0)
+        // Grant RECORD_AUDIO permission via Robolectric shadow
+        val shadowApp = shadowOf(context.applicationContext as android.app.Application)
+        shadowApp.grantRuntimePermission(android.Manifest.permission.RECORD_AUDIO)
 
         // Reset shared preferences
         context.getSharedPreferences("ever_listen_schedules", Context.MODE_PRIVATE)
@@ -53,21 +49,19 @@ class RecorderServiceTest {
             override fun endOfStream() {}
         })
 
-        // Create service and inject mock AudioRecord factory
+        // Create service and inject mock AudioRecord
         service = RecorderService()
         service.onCreate()
 
-        val mockAudioRecord = mock<AudioRecord>()
+        mockAudioRecord = mock<AudioRecord>()
         whenever(mockAudioRecord.state).thenReturn(AudioRecord.STATE_INITIALIZED)
         whenever(mockAudioRecord.read(any<ByteArray>(), any<Int>(), any<Int>(), any<Int>())).then { invocation ->
             val buffer = invocation.getArgument<ByteArray>(0)
             val offset = invocation.getArgument<Int>(1)
             val size = invocation.getArgument<Int>(2)
-            val frame = if (readExhausted.get()) null else frameQueue.poll()
-            if (frame == null) {
-                readExhausted.set(true)
-                -1
-            } else {
+            val frame = frameQueue.poll()
+            if (frame == null) -1
+            else {
                 val copyLen = minOf(frame.size, size)
                 frame.copyInto(buffer, offset, 0, copyLen)
                 copyLen
