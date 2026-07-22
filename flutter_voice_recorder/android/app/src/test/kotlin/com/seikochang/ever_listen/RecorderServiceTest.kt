@@ -8,6 +8,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
@@ -45,9 +46,8 @@ class RecorderServiceTest {
             override fun endOfStream() {}
         })
 
-        // Create service and inject mock AudioRecord
-        service = RecorderService()
-        service.onCreate()
+        // Create service with proper context via Robolectric
+        service = Robolectric.buildService(RecorderService::class.java).create().get()
 
         mockAudioRecord = mock<AudioRecord>()
         whenever(mockAudioRecord.state).thenReturn(AudioRecord.STATE_INITIALIZED)

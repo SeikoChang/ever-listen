@@ -72,6 +72,16 @@ class RecorderService : Service() {
         private const val MONITOR_CHUNK_DURATION_MS = 60_000L
         private val eventSinkRef = AtomicReference<EventChannel.EventSink?>()
 
+        // Test-only: provides a context when the service's mBase is null (direct construction)
+        @setparam:VisibleForTesting
+        @get:VisibleForTesting
+        var testContext: Context? = null
+
+        // Test-only: allows tests to provide a context when the service's mBase is null
+        @setparam:VisibleForTesting
+        @get:VisibleForTesting
+        var testContext: Context? = null
+
         @Volatile private var statusRunning = false
         @Volatile private var statusMode = "detect"
         @Volatile private var statusSensitivity = 0.6
@@ -178,7 +188,7 @@ class RecorderService : Service() {
         statusMaxStorageMb = maxStorageMb
         
         // Create output directory
-        val outputDir = recordingDirectory(this)
+        val outputDir = recordingDirectory(testContext ?: this)
         val storage = RecordingStorage(outputDir)
         try {
             storage.ensureDirectory()
@@ -446,7 +456,7 @@ class RecorderService : Service() {
     }
 
     @VisibleForTesting internal fun enforceStorageLimit() {
-        val storage = RecordingStorage(recordingDirectory(this))
+        val storage = RecordingStorage(recordingDirectory(testContext ?: this))
         storage.prune(maxStorageMb, currentOutputFile).forEach { file ->
             emitEvent("storagePruned", mapOf("filePath" to file.absolutePath))
         }

@@ -32,10 +32,14 @@ class RecorderPluginTest {
 
         plugin = RecorderPlugin()
         plugin.onAttachedToEngine(binding)
+
+        // Provide context for RecorderService (service's mBase is null when created via startService)
+        RecorderService.testContext = context
     }
 
     @After
     fun tearDown() {
+        RecorderService.testContext = null
         plugin.onDetachedFromEngine(mock())
     }
 
