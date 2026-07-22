@@ -1,0 +1,630 @@
+Initialized native services in: /Users/seikochang/.gradle/native
+Initialized jansi services in: /Users/seikochang/.gradle/native
+Found daemon DaemonInfo{pid=34165, address=[9c594611-8f96-4162-8142-113df70675f8 port:56619, addresses:[/127.0.0.1]], state=Idle, lastBusy=1784691004837, context=DefaultDaemonContext[uid=c8375b6e-1945-4058-8edd-c1961ee8890f,javaHome=/opt/homebrew/Cellar/openjdk/26.0.1/libexec/openjdk.jdk/Contents/Home,javaVersion=26,javaVendor=Homebrew,daemonRegistryDir=/Users/seikochang/.gradle/daemon,pid=34165,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=4G,-XX:ReservedCodeCacheSize=512m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx8G,-Dfile.encoding=UTF-8,-Duser.country=TW,-Duser.language=zh,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=/Applications/Android Studio.app/Contents/jbr/Contents/Home (no JDK specified, using current Java home), daemonOpts=[-XX:MaxMetaspaceSize=4G, -XX:ReservedCodeCacheSize=512m, -XX:+HeapDumpOnOutOfMemoryError, -Xmx8G, -Dfile.encoding=UTF-8, -Duser.country=TW, -Duser.language=zh, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=c8375b6e-1945-4058-8edd-c1961ee8890f,javaHome=/opt/homebrew/Cellar/openjdk/26.0.1/libexec/openjdk.jdk/Contents/Home,javaVersion=26,javaVendor=Homebrew,daemonRegistryDir=/Users/seikochang/.gradle/daemon,pid=34165,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=4G,-XX:ReservedCodeCacheSize=512m,-XX:+HeapDumpOnOutOfMemoryError,-Xmx8G,-Dfile.encoding=UTF-8,-Duser.country=TW,-Duser.language=zh,-Duser.variant]
+
+  Looking for a different daemon...
+The client will now receive all logging from the daemon (pid: 90839). The daemon log file: /Users/seikochang/.gradle/daemon/9.1.0/daemon-90839.out.log
+Starting 37th build in daemon [uptime: 12 hrs 11 mins 11.652 secs, performance: 100%, GC rate: 0.00/s, heap usage: 1% of 8 GiB, non-heap usage: 9% of 4 GiB]
+Using 8 worker leases.
+Now considering [/Users/seikochang/git/ever-listen/flutter_voice_recorder/android, /Users/seikochang/git/flutter/packages/flutter_tools/gradle, /opt/homebrew/share/flutter/packages/flutter_tools/gradle] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Now considering [/Users/seikochang/git/flutter/packages/flutter_tools/gradle, /Users/seikochang/git/ever-listen/flutter_voice_recorder/android, /opt/homebrew/share/flutter/packages/flutter_tools/gradle] as hierarchies to watch
+
+> Configure project :gradle
+Evaluating project ':gradle' using build file '/Users/seikochang/git/flutter/packages/flutter_tools/gradle/build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.java-gradle-plugin']
+Resolved plugin [id: 'org.gradle.groovy']
+Resolved plugin [id: 'org.gradle.kotlin.kotlin-dsl', version: '6.2.0']
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.2.20']
+Build eefacc4d-e2a5-44de-9a61-37219dc0d69f is started
+Using Kotlin Gradle Plugin gradle813 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+WARNING: Unsupported Kotlin plugin version.
+The `embedded-kotlin` and `kotlin-dsl` plugins rely on features of Kotlin `2.2.0` that might work differently than in the requested version `2.2.20`.
+file or directory '/Users/seikochang/git/flutter/packages/flutter_tools/gradle/src/main/java', not found
+Resolved plugin [id: 'dev.flutter.flutter-plugin-loader', version: '1.0.0']
+Resolved plugin [id: 'com.android.application', version: '9.0.1', apply: false]
+Resolved plugin [id: 'org.jetbrains.kotlin.android', version: '2.3.20', apply: false]
+Resolve mutations for :gradle:checkKotlinGradlePluginConfigurationErrors (Thread[#4483,Execution worker,5,main]) started.
+:gradle:checkKotlinGradlePluginConfigurationErrors (Thread[#4488,Execution worker Thread 6,5,main]) started.
+
+> Task :gradle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':gradle:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :gradle:compileKotlin (Thread[#4488,Execution worker Thread 6,5,main]) started.
+:gradle:compileKotlin (Thread[#4488,Execution worker Thread 6,5,main]) started.
+
+> Task :gradle:compileKotlin UP-TO-DATE
+Caching disabled for task ':gradle:compileKotlin' because:
+  Build cache is disabled
+Skipping task ':gradle:compileKotlin' as it is up-to-date.
+Resolve mutations for :gradle:compileJava (Thread[#4488,Execution worker Thread 6,5,main]) started.
+:gradle:compileJava (Thread[#4488,Execution worker Thread 6,5,main]) started.
+
+> Task :gradle:compileJava NO-SOURCE
+Skipping task ':gradle:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :gradle:compileGroovy (Thread[#4488,Execution worker Thread 6,5,main]) started.
+:gradle:compileGroovy (Thread[#4488,Execution worker Thread 6,5,main]) started.
+
+> Task :gradle:compileGroovy NO-SOURCE
+Skipping task ':gradle:compileGroovy' as it has no source files and no previous output files.
+Resolve mutations for :gradle:pluginDescriptors (Thread[#4488,Execution worker Thread 6,5,main]) started.
+:gradle:pluginDescriptors (Thread[#4488,Execution worker Thread 6,5,main]) started.
+
+> Task :gradle:pluginDescriptors UP-TO-DATE
+Caching disabled for task ':gradle:pluginDescriptors' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle:pluginDescriptors' as it is up-to-date.
+Resolve mutations for :gradle:processResources (Thread[#4488,Execution worker Thread 6,5,main]) started.
+:gradle:processResources (Thread[#4488,Execution worker Thread 6,5,main]) started.
+
+> Task :gradle:processResources UP-TO-DATE
+Caching disabled for task ':gradle:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle:processResources' as it is up-to-date.
+Resolve mutations for :gradle:classes (Thread[#4488,Execution worker Thread 6,5,main]) started.
+:gradle:classes (Thread[#4488,Execution worker Thread 6,5,main]) started.
+
+> Task :gradle:classes UP-TO-DATE
+Skipping task ':gradle:classes' as it has no actions.
+Resolve mutations for :gradle:jar (Thread[#4488,Execution worker Thread 6,5,main]) started.
+:gradle:jar (Thread[#4488,Execution worker Thread 6,5,main]) started.
+
+> Task :gradle:jar UP-TO-DATE
+Caching disabled for task ':gradle:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':gradle:jar' as it is up-to-date.
+Settings evaluated using settings file '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/settings.gradle.kts'.
+Projects loaded. Root project using build file '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/build.gradle.kts'.
+Included projects: [root project 'android', project ':app']
+
+> Configure project :app
+Evaluating project ':app' using build file '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/build.gradle.kts'.
+Resolved plugin [id: 'com.android.application']
+Resolved plugin [id: 'org.jetbrains.kotlin.android']
+Resolved plugin [id: 'dev.flutter.flutter-gradle-plugin']
+WARNING: The option setting 'android.builtInKotlin=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: The option setting 'android.newDsl=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+Using default execution profile
+Build 451383f6-48d3-47a8-89d8-829e460040da is started
+Using Kotlin Gradle Plugin gradle813 variant
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+C/C++: android.ndkVersion from module build.gradle is [28.2.13676358]
+C/C++: android.ndkPath from module build.gradle is not set
+C/C++: ndk.dir in local.properties is not set
+C/C++: Not considering ANDROID_NDK_HOME because support was removed after deprecation period.
+C/C++: sdkFolder is /Users/seikochang/Library/Android/sdk
+WARNING: [CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+[CXX5101] NDK folder '/Users/seikochang/Library/Android/sdk/ndk/28.2.13676358' specified does not contain 'platforms'.
+w: [33m[1m⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage[0m[0m
+The 'org.jetbrains.kotlin.android' plugin in project ':app' is no longer required for Kotlin support since AGP 9.0.
+[32m[1mSolution:[0m[0m
+[32m[3mRemove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.[0m[0m
+[36mSee [0m[34mhttps://kotl.in/gradle/agp-built-in-kotlin[0m[36m for more details.[0m
+
+
+> Configure project :
+Evaluating root project 'android' using build file '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/build.gradle.kts'.
+All projects evaluated.
+Task name matched 'test'
+Selected primary task 'test' from project :
+Adding -Xuse-inline-scopes-numbers Kotlin compiler flag for task :app:compileDebugKotlin
+Tasks to be executed: [task ':app:checkKotlinGradlePluginConfigurationErrors', task ':app:cleanMergeDebugAssets', task ':app:compileFlutterBuildDebug', task ':app:generateDebugAssets', task ':app:preBuild', task ':app:preDebugBuild', task ':app:mergeDebugAssets', task ':app:copyFlutterAssetsDebug', task ':app:generateDebugResources', task ':app:packageDebugResources', task ':app:processDebugNavigationResources', task ':app:parseDebugLocalResources', task ':app:generateDebugRFile', task ':app:compileDebugKotlin', task ':app:javaPreCompileDebug', task ':app:compileDebugJavaWithJavac', task ':app:checkDebugAarMetadata', task ':app:compileDebugNavigationResources', task ':app:mapDebugSourceSetPaths', task ':app:mergeDebugResources', task ':app:createDebugCompatibleScreenManifests', task ':app:extractDeepLinksDebug', task ':app:processDebugMainManifest', task ':app:outputDebugAppLinkSettings', task ':app:processDebugManifest', task ':app:processDebugManifestForPackage', task ':app:processDebugResources', task ':app:bundleDebugClassesToRuntimeJar', task ':app:bundleDebugClassesToCompileJar', task ':app:compileDebugUnitTestKotlin', task ':app:preDebugUnitTestBuild', task ':app:javaPreCompileDebugUnitTest', task ':app:compileDebugUnitTestJavaWithJavac', task ':app:packageDebugUnitTestForUnitTest', task ':app:processDebugUnitTestManifest', task ':app:generateDebugUnitTestConfig', task ':app:processDebugJavaRes', task ':app:processDebugUnitTestJavaRes', task ':app:testDebugUnitTest', task ':app:test']
+Tasks that were excluded: []
+Resolve mutations for :app:checkKotlinGradlePluginConfigurationErrors (Thread[#4484,Execution worker Thread 2,5,main]) started.
+:app:checkKotlinGradlePluginConfigurationErrors (Thread[#4484,Execution worker Thread 2,5,main]) started.
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':app:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :app:cleanMergeDebugAssets (Thread[#4484,Execution worker Thread 2,5,main]) started.
+:app:cleanMergeDebugAssets (Thread[#4484,Execution worker Thread 2,5,main]) started.
+
+> Task :app:cleanMergeDebugAssets
+Caching disabled for task ':app:cleanMergeDebugAssets' because:
+  Build cache is disabled
+Task ':app:cleanMergeDebugAssets' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Resolve mutations for :app:compileFlutterBuildDebug (Thread[#4484,Execution worker Thread 2,5,main]) started.
+:app:compileFlutterBuildDebug (Thread[#4484,Execution worker Thread 2,5,main]) started.
+
+> Task :app:compileFlutterBuildDebug UP-TO-DATE
+Caching disabled for task ':app:compileFlutterBuildDebug' because:
+  Build cache is disabled
+  Caching has not been enabled for the task
+Skipping task ':app:compileFlutterBuildDebug' as it is up-to-date.
+Resolve mutations for :app:generateDebugAssets (Thread[#4484,Execution worker Thread 2,5,main]) started.
+:app:generateDebugAssets (Thread[#4484,Execution worker Thread 2,5,main]) started.
+
+> Task :app:generateDebugAssets UP-TO-DATE
+Skipping task ':app:generateDebugAssets' as it has no actions.
+Resolve mutations for :app:preBuild (Thread[#4484,Execution worker Thread 2,5,main]) started.
+:app:preBuild (Thread[#4484,Execution worker Thread 2,5,main]) started.
+
+> Task :app:preBuild UP-TO-DATE
+Skipping task ':app:preBuild' as it has no actions.
+Resolve mutations for :app:preDebugBuild (Thread[#4484,Execution worker Thread 2,5,main]) started.
+:app:preDebugBuild (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:preDebugBuild UP-TO-DATE
+Skipping task ':app:preDebugBuild' as it has no actions.
+Resolve mutations for :app:mergeDebugAssets (Thread[#4483,Execution worker,5,main]) started.
+:app:mergeDebugAssets (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:mergeDebugAssets
+Caching disabled for task ':app:mergeDebugAssets' because:
+  Build cache is disabled
+  Simple merging task
+Task ':app:mergeDebugAssets' is not up-to-date because:
+  Output property 'outputDir' file /Users/seikochang/git/ever-listen/flutter_voice_recorder/build/app/intermediates/assets/debug/mergeDebugAssets has been removed.
+The input changes require a full rebuild for incremental task ':app:mergeDebugAssets'.
+Resolve mutations for :app:copyFlutterAssetsDebug (Thread[#4483,Execution worker,5,main]) started.
+:app:copyFlutterAssetsDebug (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:copyFlutterAssetsDebug
+Caching disabled for task ':app:copyFlutterAssetsDebug' because:
+  Build cache is disabled
+  Not worth caching
+Task ':app:copyFlutterAssetsDebug' is not up-to-date because:
+  Output property 'destinationDir' file /Users/seikochang/git/ever-listen/flutter_voice_recorder/build/app/intermediates/assets/debug/mergeDebugAssets/flutter_assets has been removed.
+  Output property 'destinationDir' file /Users/seikochang/git/ever-listen/flutter_voice_recorder/build/app/intermediates/assets/debug/mergeDebugAssets/flutter_assets/AssetManifest.bin has been removed.
+  Output property 'destinationDir' file /Users/seikochang/git/ever-listen/flutter_voice_recorder/build/app/intermediates/assets/debug/mergeDebugAssets/flutter_assets/FontManifest.json has been removed.
+  and more...
+Resolve mutations for :app:generateDebugResources (Thread[#4483,Execution worker,5,main]) started.
+:app:generateDebugResources (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:generateDebugResources UP-TO-DATE
+Caching disabled for task ':app:generateDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:generateDebugResources' as it is up-to-date.
+Resolve mutations for :app:packageDebugResources (Thread[#4483,Execution worker,5,main]) started.
+:app:packageDebugResources (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:packageDebugResources UP-TO-DATE
+Caching disabled for task ':app:packageDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:packageDebugResources' as it is up-to-date.
+Resolve mutations for :app:processDebugNavigationResources (Thread[#4483,Execution worker,5,main]) started.
+:app:processDebugNavigationResources (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:processDebugNavigationResources UP-TO-DATE
+Caching disabled for task ':app:processDebugNavigationResources' because:
+  Build cache is disabled
+Skipping task ':app:processDebugNavigationResources' as it is up-to-date.
+Resolve mutations for :app:parseDebugLocalResources (Thread[#4483,Execution worker,5,main]) started.
+:app:parseDebugLocalResources (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:parseDebugLocalResources UP-TO-DATE
+Caching disabled for task ':app:parseDebugLocalResources' because:
+  Build cache is disabled
+Skipping task ':app:parseDebugLocalResources' as it is up-to-date.
+Resolve mutations for :app:generateDebugRFile (Thread[#4483,Execution worker,5,main]) started.
+:app:generateDebugRFile (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:generateDebugRFile UP-TO-DATE
+Caching disabled for task ':app:generateDebugRFile' because:
+  Build cache is disabled
+Skipping task ':app:generateDebugRFile' as it is up-to-date.
+Resolve mutations for :app:compileDebugKotlin (Thread[#4483,Execution worker,5,main]) started.
+:app:compileDebugKotlin (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:compileDebugKotlin UP-TO-DATE
+Adding -Xuse-inline-scopes-numbers Kotlin compiler flag for task :app:compileDebugAndroidTestKotlin
+GradleBuildProject.Builder should not be accessed through AnalyticsConfiguratorService after AnalyticsService is created. Analytics information of this build might be incomplete.
+Caching disabled for task ':app:compileDebugKotlin' because:
+  Build cache is disabled
+Skipping task ':app:compileDebugKotlin' as it is up-to-date.
+Resolve mutations for :app:javaPreCompileDebug (Thread[#4483,Execution worker,5,main]) started.
+:app:javaPreCompileDebug (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:javaPreCompileDebug UP-TO-DATE
+Caching disabled for task ':app:javaPreCompileDebug' because:
+  Build cache is disabled
+Skipping task ':app:javaPreCompileDebug' as it is up-to-date.
+Resolve mutations for :app:compileDebugJavaWithJavac (Thread[#4483,Execution worker,5,main]) started.
+:app:compileDebugJavaWithJavac (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+Custom actions are attached to task ':app:compileDebugJavaWithJavac'.
+Caching disabled for task ':app:compileDebugJavaWithJavac' because:
+  Build cache is disabled
+Skipping task ':app:compileDebugJavaWithJavac' as it is up-to-date.
+No compile result for :app:compileDebugJavaWithJavac
+No compile result for :app:compileDebugJavaWithJavac
+No compile result for :app:compileDebugJavaWithJavac
+No compile result for :app:compileDebugJavaWithJavac
+Resolve mutations for :app:checkDebugAarMetadata (Thread[#4483,Execution worker,5,main]) started.
+:app:checkDebugAarMetadata (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+Caching disabled for task ':app:checkDebugAarMetadata' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:checkDebugAarMetadata' as it is up-to-date.
+Resolve mutations for :app:compileDebugNavigationResources (Thread[#4483,Execution worker,5,main]) started.
+:app:compileDebugNavigationResources (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+Caching disabled for task ':app:compileDebugNavigationResources' because:
+  Build cache is disabled
+Skipping task ':app:compileDebugNavigationResources' as it is up-to-date.
+Resolve mutations for :app:mapDebugSourceSetPaths (Thread[#4483,Execution worker,5,main]) started.
+:app:mapDebugSourceSetPaths (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+Caching disabled for task ':app:mapDebugSourceSetPaths' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:mapDebugSourceSetPaths' as it is up-to-date.
+Resolve mutations for :app:mergeDebugResources (Thread[#4483,Execution worker,5,main]) started.
+:app:mergeDebugResources (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:mergeDebugResources UP-TO-DATE
+Caching disabled for task ':app:mergeDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:mergeDebugResources' as it is up-to-date.
+Resolve mutations for :app:createDebugCompatibleScreenManifests (Thread[#4483,Execution worker,5,main]) started.
+:app:createDebugCompatibleScreenManifests (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+Caching disabled for task ':app:createDebugCompatibleScreenManifests' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:createDebugCompatibleScreenManifests' as it is up-to-date.
+Resolve mutations for :app:extractDeepLinksDebug (Thread[#4483,Execution worker,5,main]) started.
+:app:extractDeepLinksDebug (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+Caching disabled for task ':app:extractDeepLinksDebug' because:
+  Build cache is disabled
+Skipping task ':app:extractDeepLinksDebug' as it is up-to-date.
+work action resolve navigation.json (project :app) (Thread[#4483,Execution worker,5,main]) started.
+Resolve mutations for :app:processDebugMainManifest (Thread[#4483,Execution worker,5,main]) started.
+:app:processDebugMainManifest (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:processDebugMainManifest UP-TO-DATE
+Caching disabled for task ':app:processDebugMainManifest' because:
+  Build cache is disabled
+Skipping task ':app:processDebugMainManifest' as it is up-to-date.
+Resolve mutations for :app:outputDebugAppLinkSettings (Thread[#4483,Execution worker,5,main]) started.
+:app:outputDebugAppLinkSettings (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:outputDebugAppLinkSettings UP-TO-DATE
+Caching disabled for task ':app:outputDebugAppLinkSettings' because:
+  Build cache is disabled
+  Caching has not been enabled for the task
+Skipping task ':app:outputDebugAppLinkSettings' as it is up-to-date.
+Resolve mutations for :app:processDebugManifest (Thread[#4483,Execution worker,5,main]) started.
+:app:processDebugManifest (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:processDebugManifest UP-TO-DATE
+Caching disabled for task ':app:processDebugManifest' because:
+  Build cache is disabled
+Skipping task ':app:processDebugManifest' as it is up-to-date.
+Resolve mutations for :app:processDebugManifestForPackage (Thread[#4483,Execution worker,5,main]) started.
+:app:processDebugManifestForPackage (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+Custom actions are attached to task ':app:processDebugManifestForPackage'.
+Caching disabled for task ':app:processDebugManifestForPackage' because:
+  Build cache is disabled
+Skipping task ':app:processDebugManifestForPackage' as it is up-to-date.
+Resolve mutations for :app:processDebugResources (Thread[#4483,Execution worker,5,main]) started.
+:app:processDebugResources (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:processDebugResources UP-TO-DATE
+Caching disabled for task ':app:processDebugResources' because:
+  Build cache is disabled
+Skipping task ':app:processDebugResources' as it is up-to-date.
+Resolve mutations for :app:bundleDebugClassesToRuntimeJar (Thread[#4483,Execution worker,5,main]) started.
+:app:bundleDebugClassesToRuntimeJar (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:bundleDebugClassesToRuntimeJar UP-TO-DATE
+Caching disabled for task ':app:bundleDebugClassesToRuntimeJar' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:bundleDebugClassesToRuntimeJar' as it is up-to-date.
+work action resolve classes.jar (project :app) (Thread[#4483,Execution worker,5,main]) started.
+Resolve mutations for :app:bundleDebugClassesToCompileJar (Thread[#4483,Execution worker,5,main]) started.
+:app:bundleDebugClassesToCompileJar (Thread[#4483,Execution worker,5,main]) started.
+
+> Task :app:bundleDebugClassesToCompileJar UP-TO-DATE
+Caching disabled for task ':app:bundleDebugClassesToCompileJar' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:bundleDebugClassesToCompileJar' as it is up-to-date.
+work action resolve classes.jar (project :app) (Thread[#4483,Execution worker,5,main]) started.
+Resolve mutations for :app:compileDebugUnitTestKotlin (Thread[#4483,Execution worker,5,main]) started.
+:app:compileDebugUnitTestKotlin (Thread[#4483,Execution worker,5,main]) started.
+Resolve mutations for :app:preDebugUnitTestBuild (Thread[#4487,Execution worker Thread 5,5,main]) started.
+:app:preDebugUnitTestBuild (Thread[#4487,Execution worker Thread 5,5,main]) started.
+
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+Skipping task ':app:preDebugUnitTestBuild' as it has no actions.
+Resolve mutations for :app:javaPreCompileDebugUnitTest (Thread[#4487,Execution worker Thread 5,5,main]) started.
+:app:javaPreCompileDebugUnitTest (Thread[#4487,Execution worker Thread 5,5,main]) started.
+
+> Task :app:javaPreCompileDebugUnitTest UP-TO-DATE
+Caching disabled for task ':app:javaPreCompileDebugUnitTest' because:
+  Build cache is disabled
+Skipping task ':app:javaPreCompileDebugUnitTest' as it is up-to-date.
+Resolve mutations for :app:packageDebugUnitTestForUnitTest (Thread[#4487,Execution worker Thread 5,5,main]) started.
+:app:packageDebugUnitTestForUnitTest (Thread[#4487,Execution worker Thread 5,5,main]) started.
+
+> Task :app:packageDebugUnitTestForUnitTest UP-TO-DATE
+Caching disabled for task ':app:packageDebugUnitTestForUnitTest' because:
+  Build cache is disabled
+  Simple merging task
+Skipping task ':app:packageDebugUnitTestForUnitTest' as it is up-to-date.
+Resolve mutations for :app:processDebugUnitTestManifest (Thread[#4487,Execution worker Thread 5,5,main]) started.
+:app:processDebugUnitTestManifest (Thread[#4487,Execution worker Thread 5,5,main]) started.
+
+> Task :app:processDebugUnitTestManifest UP-TO-DATE
+Caching disabled for task ':app:processDebugUnitTestManifest' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:processDebugUnitTestManifest' as it is up-to-date.
+Resolve mutations for :app:generateDebugUnitTestConfig (Thread[#4487,Execution worker Thread 5,5,main]) started.
+:app:generateDebugUnitTestConfig (Thread[#4487,Execution worker Thread 5,5,main]) started.
+
+> Task :app:generateDebugUnitTestConfig UP-TO-DATE
+Caching disabled for task ':app:generateDebugUnitTestConfig' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:generateDebugUnitTestConfig' as it is up-to-date.
+Resolve mutations for :app:processDebugJavaRes (Thread[#4487,Execution worker Thread 5,5,main]) started.
+:app:processDebugJavaRes (Thread[#4487,Execution worker Thread 5,5,main]) started.
+
+> Task :app:processDebugJavaRes UP-TO-DATE
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/main/resources', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/debug/resources', not found
+Caching disabled for task ':app:processDebugJavaRes' because:
+  Build cache is disabled
+  Caching has been disabled for the task
+Skipping task ':app:processDebugJavaRes' as it is up-to-date.
+work action resolve out (project :app) (Thread[#4487,Execution worker Thread 5,5,main]) started.
+
+> Task :app:compileDebugUnitTestKotlin FAILED
+Caching disabled for task ':app:compileDebugUnitTestKotlin' because:
+  Build cache is disabled
+Task ':app:compileDebugUnitTestKotlin' is not up-to-date because:
+  Input property 'classpathSnapshotProperties.classpathSnapshot' file /Users/seikochang/.gradle/caches/9.1.0/transforms/4a57560f8da90811af16495c9cd32e0d/transformed/classes_jar-snapshot.bin has been removed.
+  Input property 'classpathSnapshotProperties.classpathSnapshot' file /Users/seikochang/.gradle/caches/9.1.0/transforms/eaee5eb3cfcef98c73bb9b112f0594f0/transformed/classes_jar-snapshot.bin has been added.
+  Input property 'classpathSnapshotProperties.classpathSnapshot' file /Users/seikochang/.gradle/caches/9.1.0/transforms/552db79875a8eaadb212d6fc6a453a5c/transformed/byte-buddy-1_14_12_jar-snapshot.bin has been added.
+  and more...
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/debugUnitTest/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/debugUnitTest/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/debugUnitTest/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/debugUnitTest/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/java', not found
+file or directory '/Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/testDebug/kotlin', not found
+Kotlin source files: /Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/kotlin/com/seikochang/ever_listen/AudioFileWriterTest.kt, /Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/kotlin/com/seikochang/ever_listen/RecorderServiceTest.kt, /Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/kotlin/com/seikochang/ever_listen/RecorderPluginTest.kt, /Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/kotlin/com/seikochang/ever_listen/AudioFrameBufferTest.kt, /Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/kotlin/com/seikochang/ever_listen/RecordingStorageTest.kt, /Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/kotlin/com/seikochang/ever_listen/BootReceiverTest.kt, /Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/kotlin/com/seikochang/ever_listen/ScheduleStoreTest.kt, /Users/seikochang/git/ever-listen/flutter_voice_recorder/android/app/src/test/kotlin/com/seikochang/ever_listen/VADProcessorTest.kt
+Java source files: 
+Script source files: 
+Script file extensions: 
+Using Kotlin/JVM incremental compilation
+[KOTLIN] Kotlin compilation 'jdkHome' argument: null
+i: Options for KOTLIN DAEMON: IncrementalCompilationOptions(super=CompilationOptions(compilerMode=INCREMENTAL_COMPILER, targetPlatform=JVM, reportCategories=[0], reportSeverity=2, requestedCompilationResults=[0], kotlinScriptExtensions=[], generateCompilerRefIndex=false), sourceChanges=org.jetbrains.kotlin.buildtools.api.SourcesChanges$Known@4a7eb749, classpathChanges=ToBeComputedByIncrementalCompiler, workingDir=/Users/seikochang/git/ever-listen/flutter_voice_recorder/build/app/kotlin/compileDebugUnitTestKotlin/cacheable, multiModuleICSettings=null, icFeatures=IncrementalCompilationFeatures(usePreciseJavaTracking=true, withAbiSnapshot=false, preciseCompilationResultsBackup=true, keepIncrementalCompilationCachesInMemory=true, enableUnsafeIncrementalCompilationForMultiplatform=false, enableMonotonousIncrementalCompileSetExpansion=true), outputFiles=[/Users/seikochang/git/ever-listen/flutter_voice_recorder/build/app/tmp/kotlin-classes/debugUnitTest, /Users/seikochang/git/ever-listen/flutter_voice_recorder/build/app/kotlin/compileDebugUnitTestKotlin/cacheable, /Users/seikochang/git/ever-listen/flutter_voice_recorder/build/app/kotlin/compileDebugUnitTestKotlin/local-state])
+i: Finished executing kotlin compiler using DAEMON strategy
+Build eefacc4d-e2a5-44de-9a61-37219dc0d69f is closed
+Build 451383f6-48d3-47a8-89d8-829e460040da is closed
+
+[Incubating] Problems report is available at: file:///Users/seikochang/git/ever-listen/flutter_voice_recorder/build/reports/problems/problems-report.html
+35 actionable tasks: 4 executed, 31 up-to-date
+Watched directory hierarchies: [/Users/seikochang/git/flutter/packages/flutter_tools/gradle, /Users/seikochang/git/ever-listen/flutter_voice_recorder/android, /opt/homebrew/share/flutter/packages/flutter_tools/gradle]

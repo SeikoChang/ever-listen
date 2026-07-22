@@ -11,6 +11,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadows.ShadowPackageManager
+import android.content.pm.PackageManager
 import org.robolectric.annotation.Config
 import java.io.File
 import java.util.concurrent.ArrayBlockingQueue
@@ -33,8 +35,10 @@ class RecorderServiceTest {
         frameQueue.clear()
 
         // Grant RECORD_AUDIO permission via Robolectric shadow
-        val shadowApp = shadowOf(context.applicationContext as android.app.Application)
-        shadowApp.grantRuntimePermission(android.Manifest.permission.RECORD_AUDIO)
+        ShadowPackageManager.shadowOf(context.packageManager).setPermission(
+            android.Manifest.permission.RECORD_AUDIO,
+            PackageManager.PERMISSION_GRANTED
+        )
 
         // Reset shared preferences
         context.getSharedPreferences("ever_listen_schedules", Context.MODE_PRIVATE)

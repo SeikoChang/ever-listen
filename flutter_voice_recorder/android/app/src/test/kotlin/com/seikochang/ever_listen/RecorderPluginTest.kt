@@ -70,7 +70,7 @@ class RecorderPluginTest {
     @Test
     fun stopRecording_succeeds() {
         val result = captureResult()
-        plugin.onMethodCall(MethodCall("stopRecording"), result)
+        plugin.onMethodCall(MethodCall("stopRecording", null), result)
         assertTrue(result.called)
         assertEquals("stopped", (result.value as Map<*, *>)["status"])
     }
@@ -157,7 +157,7 @@ class RecorderPluginTest {
     @Test
     fun getSchedules_emptyReturnsEmptyList() {
         val result = captureResult()
-        plugin.onMethodCall(MethodCall("getSchedules"), result)
+        plugin.onMethodCall(MethodCall("getSchedules", null), result)
         assertTrue(result.called)
         assertTrue((result.value as List<*>).isEmpty())
     }
@@ -170,7 +170,7 @@ class RecorderPluginTest {
             repeat = "daily", timezone = "UTC", mode = "monitor", sensitivity = 0.5, maxStorageMb = 100
         ))
         val result = captureResult()
-        plugin.onMethodCall(MethodCall("getSchedules"), result)
+        plugin.onMethodCall(MethodCall("getSchedules", null), result)
         assertTrue(result.called)
         assertEquals(1, (result.value as List<*>).size)
     }
@@ -180,7 +180,7 @@ class RecorderPluginTest {
     @Test
     fun requestPermissions_noActivityReturnsError() {
         val result = captureResult()
-        plugin.onMethodCall(MethodCall("requestPermissions"), result)
+        plugin.onMethodCall(MethodCall("requestPermissions", null), result)
         assertTrue(result.called)
         assertEquals("NO_ACTIVITY", result.errorCode)
     }
@@ -190,7 +190,7 @@ class RecorderPluginTest {
     @Test
     fun getStatus_returnsStatusSnapshot() {
         val result = captureResult()
-        plugin.onMethodCall(MethodCall("getStatus"), result)
+        plugin.onMethodCall(MethodCall("getStatus", null), result)
         assertTrue(result.called)
         val status = result.value as Map<*, *>
         assertNotNull(status["running"])
@@ -219,7 +219,7 @@ class RecorderPluginTest {
     @Test
     fun unknownMethod_returnsNotImplemented() {
         val result = captureResult()
-        plugin.onMethodCall(MethodCall("unknownMethod"), result)
+        plugin.onMethodCall(MethodCall("unknownMethod", null), result)
         assertTrue(result.called)
     }
 
