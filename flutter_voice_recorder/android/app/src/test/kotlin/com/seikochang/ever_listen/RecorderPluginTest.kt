@@ -16,7 +16,7 @@ import org.mockito.kotlin.*
 import android.content.Intent
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [33])
+@Config(sdk = [30])
 class RecorderPluginTest {
 
     private lateinit var context: Context
@@ -43,9 +43,8 @@ class RecorderPluginTest {
             // No-op: we test plugin behavior, not service lifecycle
         }
 
-        // Grant exact alarm permission for schedule tests
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-        shadowOf(alarmManager).setCanScheduleExactAlarms(true)
+        // Grant RECORD_AUDIO permission for plugin tests
+        shadowOf(RuntimeEnvironment.getApplication()).grantPermissions(android.Manifest.permission.RECORD_AUDIO)
     }
 
     @After
@@ -75,6 +74,7 @@ class RecorderPluginTest {
 
     @Test
     fun startRecording_permissionDeniedReturnsError() {
+        shadowOf(RuntimeEnvironment.getApplication()).denyPermissions(android.Manifest.permission.RECORD_AUDIO)
         val result = captureResult()
         plugin.onMethodCall(MethodCall("startRecording", mapOf("mode" to "detect")), result)
         assertTrue(result.called)

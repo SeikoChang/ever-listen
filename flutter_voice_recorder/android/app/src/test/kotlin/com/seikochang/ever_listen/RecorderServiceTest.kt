@@ -134,6 +134,7 @@ class RecorderServiceTest {
 
     @Test
     fun monitorMode_writesAllFrames() {
+        service.mode = "monitor"
         repeat(50) { frameQueue.add(silenceFrame()) }
         service.startRecording()
         shadowOf(android.os.Looper.getMainLooper()).idle()
@@ -147,6 +148,7 @@ class RecorderServiceTest {
 
     @Test
     fun monitorMode_emitsFileReady() {
+        service.mode = "monitor"
         repeat(10) { frameQueue.add(silenceFrame()) }
         service.startRecording()
         shadowOf(android.os.Looper.getMainLooper()).idle()
@@ -161,6 +163,7 @@ class RecorderServiceTest {
 
     @Test
     fun scheduleMode_emitsScheduleEvents() {
+        service.mode = "monitor"
         repeat(10) { frameQueue.add(silenceFrame()) }
         service.scheduledSession = true
         service.startRecording()
