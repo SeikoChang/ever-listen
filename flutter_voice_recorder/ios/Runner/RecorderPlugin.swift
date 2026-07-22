@@ -183,12 +183,12 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     ]
   }
 
-  private func number(_ value: Any?) -> Double? {
+  func number(_ value: Any?) -> Double? {
     if let value = value as? NSNumber { return value.doubleValue }
     return nil
   }
 
-  private func loadSchedules() -> [[String: Any]] {
+  func loadSchedules() -> [[String: Any]] {
     guard let data = UserDefaults.standard.data(forKey: Self.schedulesKey),
           let decoded = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
       return []
@@ -196,7 +196,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     return decoded
   }
 
-  private func saveSchedules(_ schedules: [[String: Any]]) {
+  func saveSchedules(_ schedules: [[String: Any]]) {
     if let data = try? JSONSerialization.data(withJSONObject: schedules) {
       UserDefaults.standard.set(data, forKey: Self.schedulesKey)
     }
@@ -320,7 +320,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     eventSink?(["type": type, "data": data, "timestamp": Int(Date().timeIntervalSince1970 * 1000)])
   }
 
-  private func normalizedSchedules(now: Double) -> [[String: Any]] {
+  func normalizedSchedules(now: Double) -> [[String: Any]] {
     var normalized: [[String: Any]] = []
     for original in loadSchedules() {
       var schedule = original

@@ -84,7 +84,7 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
 |----------|-----------|-------------|----------|
 | Android (Kotlin) | 6 | ~1,442 lines | **~33%** (core logic 0%) |
 | Dart/Flutter | 2 | 384 lines | **~30%** (API layer only) |
-| iOS (Swift) | 0 (stub) | 515 lines | **0%** |
+| iOS (Swift) | 1 | 515 lines | **~35%** | 🟡 Data layer covered |
 | **Total** | **8** | **~2,341 lines** | **~22%** |
 
 ### Per-Module Breakdown
@@ -93,7 +93,7 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
 |--------|-------|------|----------|------|
 | **RecorderPlugin.kt** | 303 | ❌ None | **0%** | 🔴 Core entry point |
 | **RecorderService.kt** | 482 | ❌ None | **0%** | 🔴 Core recording logic |
-| **RecorderPlugin.swift** | 515 | ❌ None | **0%** | 🔴 iOS entirely untested |
+| **RecorderPlugin.swift** | 515 | RecorderPluginTests.swift | **~35%** | 🟡 Data layer tested, audio hardware deferred |
 | VADNativeBridge.kt | 22 | ❌ None | 0% | 🟡 Small |
 | ScheduleRecorderReceiver.kt | 44 | ❌ None | 0% | 🟡 Small |
 | VADProcessor.kt | 118 | VADProcessorTest.kt | **~80%** | 🟢 Edge cases covered |

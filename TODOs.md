@@ -90,6 +90,6 @@
 - [x] BootReceiverTest: add recurring schedule rescheduling <!-- id: 63 -->
 
 ## Phase 10: iOS Test Coverage (P1)
-- [ ] Add `RecorderPlugin` unit tests — MethodChannel handlers (start/stop/schedule) <!-- id: 64 -->
-- [ ] Add schedule normalization tests (once/daily/weekly) <!-- id: 65 -->
-- [ ] Add `AudioEngineRecorder` initialization and frame processing tests <!-- id: 66 -->
+- [x] Add `RecorderPlugin` unit tests — MethodChannel handlers (start/stop/schedule) <!-- id: 64 -->
+- [x] Add schedule normalization tests (once/daily/weekly) <!-- id: 65 -->
+- [x] Add `AudioEngineRecorder` initialization and frame processing tests <!-- id: 66 -->
