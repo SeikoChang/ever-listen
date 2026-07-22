@@ -11,7 +11,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
-import org.robolectric.shadows.ShadowPackageManager
 import android.content.pm.PackageManager
 import org.robolectric.annotation.Config
 import java.io.File
@@ -35,7 +34,7 @@ class RecorderServiceTest {
         frameQueue.clear()
 
         // Grant RECORD_AUDIO permission via Robolectric shadow
-        ShadowPackageManager.shadowOf(context.packageManager).setPermission(
+        shadowOf(context.packageManager).setPermission(
             android.Manifest.permission.RECORD_AUDIO,
             PackageManager.PERMISSION_GRANTED
         )
