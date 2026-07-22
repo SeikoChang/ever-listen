@@ -236,5 +236,7 @@ class RecorderServiceTest {
 
     private fun waitLoop() {
         Thread.sleep(3000)
+        // Pump main looper so handler.post { emitEvent(...) } messages are processed
+        shadowOf(android.os.Looper.getMainLooper()).idle()
     }
 }

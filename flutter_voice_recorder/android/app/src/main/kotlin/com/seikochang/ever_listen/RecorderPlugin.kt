@@ -29,6 +29,11 @@ class RecorderPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAw
     private var eventSink: EventChannel.EventSink? = null
     private var permissionResult: MethodChannel.Result? = null
 
+    // Test-only: allows tests to intercept startService calls
+    @setparam:VisibleForTesting
+    @get:VisibleForTesting
+    var testServiceStarter: ((Intent) -> Unit)? = null
+
     companion object {
         private const val REQUEST_RECORD_AUDIO = 4101
         private const val REQUEST_NOTIFICATIONS = 4102
@@ -97,7 +102,9 @@ class RecorderPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAw
                 putExtra("maxStorageMb", maxStorageMb)
             }
             val appContext = context ?: throw IllegalStateException("Plugin is not attached")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (testServiceStarter != null) {
+                testServiceStarter!!.invoke(intent)
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 appContext.startForegroundService(intent)
             } else {
                 appContext.startService(intent)
@@ -185,19 +192,22 @@ class RecorderPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAw
             return
         }
 
-        val alarmManager = appContext.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-            activity?.startActivity(
-                Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                    data = Uri.parse("package:${appContext.packageName}")
-                }
-            )
-            result.error(
-                "SCHEDULE_EXACT_ALARM_REQUIRED",
-                "Exact alarm permission is required for scheduled recording",
-                mapOf("settingsAction" to Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-            )
-            return
+        // Grant exact alarm permission in tests
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = appContext.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                activity?.startActivity(
+                    Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                        data = Uri.parse("package:${appContext.packageName}")
+                    }
+                )
+                result.error(
+                    "SCHEDULE_EXACT_ALARM_REQUIRED",
+                    "Exact alarm permission is required for scheduled recording",
+                    mapOf("settingsAction" to Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                )
+                return
+            }
         }
 
         val schedule = RecordingSchedule(

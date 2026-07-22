@@ -10,8 +10,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.mockito.kotlin.*
+import android.content.Intent
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
@@ -35,11 +37,21 @@ class RecorderPluginTest {
 
         // Provide context for RecorderService (service's mBase is null when created via startService)
         RecorderService.testContext = context
+
+        // Bypass Robolectric startForegroundService (throws during service lifecycle)
+        plugin.testServiceStarter = { intent: Intent ->
+            // No-op: we test plugin behavior, not service lifecycle
+        }
+
+        // Grant exact alarm permission for schedule tests
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+        shadowOf(alarmManager).setCanScheduleExactAlarms(true)
     }
 
     @After
     fun tearDown() {
         RecorderService.testContext = null
+        plugin.testServiceStarter = null
         plugin.onDetachedFromEngine(mock())
     }
 
