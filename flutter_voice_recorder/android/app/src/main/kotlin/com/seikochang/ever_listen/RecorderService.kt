@@ -77,11 +77,6 @@ class RecorderService : Service() {
         @get:VisibleForTesting
         var testContext: Context? = null
 
-        // Test-only: allows tests to provide a context when the service's mBase is null
-        @setparam:VisibleForTesting
-        @get:VisibleForTesting
-        var testContext: Context? = null
-
         @Volatile private var statusRunning = false
         @Volatile private var statusMode = "detect"
         @Volatile private var statusSensitivity = 0.6
