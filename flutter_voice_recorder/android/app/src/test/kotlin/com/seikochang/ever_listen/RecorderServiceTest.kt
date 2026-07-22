@@ -11,8 +11,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
-import org.robolectric.shadows.ShadowApplication
-import android.content.pm.PackageManager
 import org.robolectric.annotation.Config
 import java.io.File
 import java.util.concurrent.ArrayBlockingQueue
@@ -33,9 +31,6 @@ class RecorderServiceTest {
         context = RuntimeEnvironment.getApplication()
         capturedEvents.clear()
         frameQueue.clear()
-
-        // Grant RECORD_AUDIO permission via Robolectric shadow
-        ShadowApplication.getInstance().grantRuntimePermission(android.Manifest.permission.RECORD_AUDIO)
 
         // Reset shared preferences
         context.getSharedPreferences("ever_listen_schedules", Context.MODE_PRIVATE)
