@@ -164,4 +164,108 @@ class ScheduleStoreTest {
         assertEquals(schedule.timezone, next?.timezone)
         assertEquals(schedule.sensitivity, next!!.sensitivity, 0.001)
     }
+
+    // ==================== TODO #62: Invalid Input Validation ====================
+
+    @Test
+    fun testGetWithInvalidIdReturnsNull() {
+        val retrieved = ScheduleStore.get(context, "nonexistent-id")
+        assertNull(retrieved)
+    }
+
+    @Test
+    fun testCancelNonexistentIdReturnsFalse() {
+        val cancelled = ScheduleStore.cancel(context, "nonexistent-id")
+        assertFalse(cancelled)
+    }
+
+    @Test
+    fun testRescheduleNextOnceCancelsSchedule() {
+        val schedule = RecordingSchedule(
+            id = "once-cleanup",
+            startTimeMillis = 1000L,
+            endTimeMillis = 2000L,
+            repeat = "once",
+            timezone = "UTC",
+            mode = "detect",
+            sensitivity = 0.6,
+            maxStorageMb = 200
+        )
+
+        ScheduleStore.add(context, schedule)
+        // rescheduleNext for "once" should cancel it
+        ScheduleStore.rescheduleNext(context, schedule.id)
+
+        assertNull(ScheduleStore.get(context, schedule.id))
+    }
+
+    @Test
+    fun testRescheduleNextNonexistentIdNoOp() {
+        // Should not throw
+        ScheduleStore.rescheduleNext(context, "nonexistent")
+        assertTrue(ScheduleStore.list(context).isEmpty())
+    }
+
+    @Test
+    fun testListReturnsAllSchedules() {
+        val now = System.currentTimeMillis()
+        for (i in 1..3) {
+            ScheduleStore.add(context, RecordingSchedule(
+                id = "multi-$i",
+                startTimeMillis = now + i * 1000000L,
+                endTimeMillis = now + i * 1000000L + 500000L,
+                repeat = "once",
+                timezone = "UTC",
+                mode = "detect",
+                sensitivity = 0.6,
+                maxStorageMb = 200
+            ))
+        }
+        assertEquals(3, ScheduleStore.list(context).size)
+    }
+
+    // ==================== TODO #62: Timezone Edge Cases ====================
+
+    @Test
+    fun testScheduleWithVariousTimezones() {
+        val timezones = listOf("UTC", "Asia/Taipei", "America/New_York", "Europe/London", "Pacific/Auckland")
+
+        for (tz in timezones) {
+            val schedule = RecordingSchedule(
+                id = "tz-$tz",
+                startTimeMillis = 1000L,
+                endTimeMillis = 2000L,
+                repeat = "once",
+                timezone = tz,
+                mode = "detect",
+                sensitivity = 0.6,
+                maxStorageMb = 200
+            )
+
+            ScheduleStore.add(context, schedule)
+            val retrieved = ScheduleStore.get(context, "tz-$tz")
+            assertNotNull(retrieved)
+            assertEquals(tz, retrieved?.timezone)
+        }
+    }
+
+    @Test
+    fun testRescheduleNextWithNonStandardRepeatDoesNothing() {
+        val schedule = RecordingSchedule(
+            id = "weird-repeat",
+            startTimeMillis = 1000L,
+            endTimeMillis = 2000L,
+            repeat = "monthly", // invalid repeat value
+            timezone = "UTC",
+            mode = "detect",
+            sensitivity = 0.6,
+            maxStorageMb = 200
+        )
+
+        ScheduleStore.add(context, schedule)
+        ScheduleStore.rescheduleNext(context, schedule.id)
+
+        // "monthly" is not daily/weekly → should be cancelled
+        assertNull(ScheduleStore.get(context, schedule.id))
+    }
 }

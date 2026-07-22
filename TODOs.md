@@ -84,10 +84,10 @@
 - [x] Add unit tests for invalid mode in `startRecording()` — error event + stopSelf <!-- id: 59 -->
 
 ## Phase 9: Existing Test Gap Fill (P1)
-- [ ] VADProcessorTest: add sensitivity 0.0/1.0 edge cases, dynamic sensitivity switch <!-- id: 60 -->
-- [ ] RecordingStorageTest: add `totalBytes()`, `ensureDirectory()`, empty directory <!-- id: 61 -->
-- [ ] ScheduleStoreTest: add invalid input validation, timezone edge cases <!-- id: 62 -->
-- [ ] BootReceiverTest: add recurring schedule rescheduling <!-- id: 63 -->
+- [x] VADProcessorTest: add sensitivity 0.0/1.0 edge cases, dynamic sensitivity switch <!-- id: 60 -->
+- [x] RecordingStorageTest: add `totalBytes()`, `ensureDirectory()`, empty directory <!-- id: 61 -->
+- [x] ScheduleStoreTest: add invalid input validation, timezone edge cases <!-- id: 62 -->
+- [x] BootReceiverTest: add recurring schedule rescheduling <!-- id: 63 -->
 
 ## Phase 10: iOS Test Coverage (P1)
 - [ ] Add `RecorderPlugin` unit tests — MethodChannel handlers (start/stop/schedule) <!-- id: 64 -->

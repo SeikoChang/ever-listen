@@ -73,4 +73,99 @@ class BootReceiverTest {
         val alarms = shadowAlarmManager.scheduledAlarms
         assertTrue(alarms.isNotEmpty())
     }
+
+    // ==================== TODO #63: Recurring Schedule Rescheduling ====================
+
+    @Test
+    fun testBootReceiverReschedulesDailyRecurring() {
+        val now = System.currentTimeMillis()
+        val dailySchedule = RecordingSchedule(
+            id = "daily-1",
+            startTimeMillis = now - 2 * 24L * 60L * 60L * 1000L, // 2 days ago
+            endTimeMillis = now - 2 * 24L * 60L * 60L * 1000L + 3600000L,
+            repeat = "daily",
+            timezone = "UTC",
+            mode = "detect",
+            sensitivity = 0.6,
+            maxStorageMb = 200
+        )
+        ScheduleStore.add(context, dailySchedule)
+
+        val receiver = BootReceiver()
+        val bootIntent = Intent(Intent.ACTION_BOOT_COMPLETED)
+        receiver.onReceive(context, bootIntent)
+
+        val activeSchedules = ScheduleStore.list(context)
+        assertEquals(1, activeSchedules.size)
+        val rescheduled = activeSchedules[0]
+        // Should be forwarded to a future time (at least 1 day ahead)
+        assertTrue(rescheduled.startTimeMillis > now)
+        assertEquals("daily-1", rescheduled.id)
+    }
+
+    @Test
+    fun testBootReceiverReschedulesWeeklyRecurring() {
+        val now = System.currentTimeMillis()
+        val weeklySchedule = RecordingSchedule(
+            id = "weekly-1",
+            startTimeMillis = now - 8L * 24L * 60L * 60L * 1000L, // 8 days ago
+            endTimeMillis = now - 8L * 24L * 60L * 60L * 1000L + 3600000L,
+            repeat = "weekly",
+            timezone = "UTC",
+            mode = "monitor",
+            sensitivity = 0.7,
+            maxStorageMb = 300
+        )
+        ScheduleStore.add(context, weeklySchedule)
+
+        val receiver = BootReceiver()
+        val bootIntent = Intent(Intent.ACTION_BOOT_COMPLETED)
+        receiver.onReceive(context, bootIntent)
+
+        val activeSchedules = ScheduleStore.list(context)
+        assertEquals(1, activeSchedules.size)
+        val rescheduled = activeSchedules[0]
+        // Should be forwarded to at least 1 week ahead
+        assertTrue(rescheduled.startTimeMillis > now)
+        assertEquals("weekly-1", rescheduled.id)
+        // Sensitivity and mode should be preserved
+        assertEquals(0.7, rescheduled.sensitivity, 0.001)
+        assertEquals("monitor", rescheduled.mode)
+    }
+
+    @Test
+    fun testBootReceiverWithEmptyScheduleList() {
+        // No schedules added — should not crash
+        val receiver = BootReceiver()
+        val bootIntent = Intent(Intent.ACTION_BOOT_COMPLETED)
+        receiver.onReceive(context, bootIntent)
+
+        assertTrue(ScheduleStore.list(context).isEmpty())
+    }
+
+    @Test
+    fun testBootReceiverWithFutureDailySchedule() {
+        val now = System.currentTimeMillis()
+        val dailySchedule = RecordingSchedule(
+            id = "daily-future",
+            startTimeMillis = now + 86400000L, // 1 day from now
+            endTimeMillis = now + 86400000L + 3600000L,
+            repeat = "daily",
+            timezone = "UTC",
+            mode = "detect",
+            sensitivity = 0.6,
+            maxStorageMb = 200
+        )
+        ScheduleStore.add(context, dailySchedule)
+
+        val receiver = BootReceiver()
+        val bootIntent = Intent(Intent.ACTION_BOOT_COMPLETED)
+        receiver.onReceive(context, bootIntent)
+
+        val activeSchedules = ScheduleStore.list(context)
+        assertEquals(1, activeSchedules.size)
+        // Future daily schedule should not be forwarded, just rescheduled as-is
+        val rescheduled = activeSchedules[0]
+        assertEquals(dailySchedule.startTimeMillis, rescheduled.startTimeMillis)
+    }
 }

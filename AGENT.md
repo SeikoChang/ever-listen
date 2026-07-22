@@ -96,12 +96,12 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
 | **RecorderPlugin.swift** | 515 | ❌ None | **0%** | 🔴 iOS entirely untested |
 | VADNativeBridge.kt | 22 | ❌ None | 0% | 🟡 Small |
 | ScheduleRecorderReceiver.kt | 44 | ❌ None | 0% | 🟡 Small |
-| VADProcessor.kt | 118 | VADProcessorTest.kt | **~50%** | 🟡 Missing sensitivity extremes |
+| VADProcessor.kt | 118 | VADProcessorTest.kt | **~80%** | 🟢 Edge cases covered |
 | AudioFrameBuffer.kt | 36 | AudioFrameBufferTest.kt | **~90%** | 🟢 Well covered |
 | AudioFileWriter.kt | 114 | AudioFileWriterTest.kt | **~70%** | 🟡 Missing multi-frame |
-| RecordingStorage.kt | 42 | RecordingStorageTest.kt | **~50%** | 🟡 Missing totalBytes/ensureDirectory |
-| ScheduleStore.kt | 159 | ScheduleStoreTest.kt | **~65%** | 🟡 Missing input validation |
-| BootReceiver.kt | 49 | BootReceiverTest.kt | **~50%** | 🟡 Missing recurring reschedule |
+| RecordingStorage.kt | 42 | RecordingStorageTest.kt | **~85%** | 🟢 Well covered |
+| ScheduleStore.kt | 159 | ScheduleStoreTest.kt | **~80%** | 🟢 Edge cases covered |
+| BootReceiver.kt | 49 | BootReceiverTest.kt | **~75%** | 🟢 Recurring reschedule covered |
 | recorder_plugin.dart | 81 | recorder_plugin_test.dart | **~90%** | 🟢 But only MethodChannel calls |
 | main.dart | 303 | widget_test.dart | **~10%** | 🟡 Only UI render |
 
@@ -124,11 +124,11 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
 
 | Test | Covered | Missing |
 |------|---------|---------|
-| VADProcessorTest | silence/speech, UnsatisfiedLinkError | sensitivity 0.0/1.0, dynamic switch, empty frame |
+| VADProcessorTest | silence/speech, UnsatisfiedLinkError, sensitivity 0.0/1.0, dynamic switch, empty frame | ✅ Complete |
 | AudioFileWriterTest | single WAV header validation | multi-frame sequential write, file reopen |
-| RecordingStorageTest | prune + protectedFile | `totalBytes()`, `ensureDirectory()`, empty dir |
-| ScheduleStoreTest | CRUD, daily/weekly reschedule, same-id replace | invalid input, timezone edge cases, expired cleanup |
-| BootReceiverTest | future alarm reschedule, expired cleanup | recurring reschedule, empty schedule |
+| RecordingStorageTest | prune + protectedFile, `totalBytes()`, `ensureDirectory()`, empty dir | ✅ Complete |
+| ScheduleStoreTest | CRUD, daily/weekly reschedule, same-id replace, invalid input, timezone edge cases | ✅ Complete |
+| BootReceiverTest | future alarm reschedule, expired cleanup, recurring reschedule, empty schedule | ✅ Complete |
 
 ### Recommended Priority
 
