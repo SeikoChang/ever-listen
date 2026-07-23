@@ -365,7 +365,9 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
 
 private final class AudioEngineRecorder {
   let mode: String
-  var sensitivity: Double
+  var sensitivity: Double {
+    didSet { vadProcessor?.setSensitivity(sensitivity) }
+  }
   var maxStorageMb: Int
   var eventSink: FlutterEventSink?
   private let engine = AVAudioEngine()
@@ -375,6 +377,7 @@ private final class AudioEngineRecorder {
   private var frameCount = 0
   private(set) var currentFilePath = ""
   private let directory: URL
+  private var vadProcessor: WebRTCVADProcessor?
 
   var storageUsedMb: Double { storageBytes() / (1024 * 1024) }
 
@@ -386,6 +389,7 @@ private final class AudioEngineRecorder {
     self.directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
       .appendingPathComponent("recordings", isDirectory: true)
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    self.vadProcessor = WebRTCVADProcessor()
   }
 
   func start() throws {
@@ -427,7 +431,7 @@ private final class AudioEngineRecorder {
       return
     }
 
-    let speech = rms(buffer) > (0.02 + (1 - sensitivity) * 0.08)
+    let speech = vadProcessor?.process(buffer) ?? (rms(buffer) > (0.02 + (1 - sensitivity) * 0.08))
     if speech {
       silenceFrames = 0
       if !speechActive {
@@ -510,5 +514,71 @@ private final class AudioEngineRecorder {
     DispatchQueue.main.async { [weak self] in
       self?.eventSink?(["type": type, "data": data, "timestamp": Int(Date().timeIntervalSince1970 * 1000)])
     }
+  }
+}
+
+// MARK: - WebRTC VAD Processor (TODO #20)
+
+/// Wraps the native WebRTC VAD C library via vad_wrapper.h.
+/// Falls back gracefully to nil if the native library fails to initialize.
+private final class WebRTCVADProcessor {
+  private var handle: UnsafeMutableRawPointer?
+
+  init() {
+    // Default aggressiveness 2 = "Aggressive" (good balance)
+    handle = vad_init(2)
+    if handle == nil {
+      os_log(.debug, "WebRTC VAD init failed — will use RMS fallback")
+    }
+  }
+
+  deinit {
+    vad_destroy(handle)
+  }
+
+  /// Map 0.0–1.0 sensitivity to WebRTC aggressiveness 0–3.
+  func setSensitivity(_ sensitivity: Double) {
+    let s = sensitivity.clamped(to: 0.0...1.0)
+    let aggressiveness = Int((1.0 - s) * 3).clamped(to: 0...3)
+    vad_destroy(handle)
+    handle = vad_init(aggressiveness)
+  }
+
+  /// Process an AVAudioPCMBuffer and return true if speech is detected.
+  /// Returns nil if the native VAD is unavailable (triggers RMS fallback).
+  func process(_ buffer: AVAudioPCMBuffer) -> Bool? {
+    guard let handle = handle else { return nil }
+
+    // Convert float samples to int16 for WebRTC VAD
+    guard let floatData = buffer.floatChannelData?[0] else { return nil }
+    let frameLength = Int(buffer.frameLength)
+    guard frameLength > 0 else { return nil }
+
+    var samples16 = [Int16](repeating: 0, count: frameLength)
+    for i in 0..<frameLength {
+      let clamped = floatData[i].clamped(to: -1.0...1.0)
+      samples16[i] = Int16(clamped * Float(Int16.max))
+    }
+
+    return samples16.withUnsafeBufferPointer { ptr in
+      let result = vad_process(handle, ptr.baseAddress!.assumingMemoryBound(to: Int16.self), frameLength)
+      return result == 1
+    }
+  }
+}
+
+private extension FloatingPoint {
+  func clamped(to range: ClosedRange<Self>) -> Self {
+    if self < range.lowerBound { return range.lowerBound }
+    if self > range.upperBound { return range.upperBound }
+    return self
+  }
+}
+
+private extension BinaryInteger {
+  func clamped(to range: ClosedRange<Self>) -> Self {
+    if self < range.lowerBound { return range.lowerBound }
+    if self > range.upperBound { return range.upperBound }
+    return self
   }
 }
