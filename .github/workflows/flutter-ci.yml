@@ -33,3 +33,22 @@ jobs:
           channel: 'stable'
       - run: cd flutter_voice_recorder && flutter pub get
       - run: cd flutter_voice_recorder/android && ./gradlew test --no-daemon --console=plain
+
+  ios-simulator-test:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+      - run: cd flutter_voice_recorder && flutter pub get
+      - run: cd flutter_voice_recorder && flutter build ios --simulator --no-codesign
+      - run: >-
+          cd flutter_voice_recorder && xcodebuild test
+          -project ios/Runner.xcodeproj
+          -scheme Runner
+          -sdk iphonesimulator
+          -destination 'platform=iOS Simulator,name=iPhone 15'
+          -parallel-testing-enabled NO
+          CODE_SIGNING_ALLOWED=NO

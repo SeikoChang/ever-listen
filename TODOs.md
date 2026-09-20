@@ -209,7 +209,7 @@
 - [ ] CI 已加入 Dart format check、`flutter analyze` 與 `flutter test`，待 GitHub Actions 實際通過 <!-- id: 140 -->
 - [ ] CI 已加入 Ubuntu + JDK 17 Android unit-test job，待 GitHub Actions 實際通過 <!-- id: 141 -->
 - [ ] CI 建置 Android debug APK 與正式簽署的 release AAB <!-- id: 142 -->
-- [ ] CI macOS job 執行 iOS RunnerTests 與 simulator no-codesign build <!-- id: 143 -->
+- [ ] CI 已加入 macOS iOS simulator build/RunnerTests job，待 GitHub Actions 實際通過 <!-- id: 143 -->
 - [ ] 建立跨平台 MethodChannel contract tests 與核心 feature parity tests <!-- id: 144 -->
 - [ ] 產生並保存真實 coverage report，移除 AGENT/TODO 中的人工估計值 <!-- id: 145 -->
 - [ ] 將所有 build/test gate 設為 pull request 必須通過的 checks <!-- id: 146 -->
