@@ -189,7 +189,7 @@
 - [ ] 定義 missed window 行為：立即啟動、標記 missed 或跳到下一次 <!-- id: 126 -->
 - [x] 修正 BootReceiver 在重開機時略過仍位於有效區間內排程的問題（已補回歸測試，待 Gradle CI 驗證） <!-- id: 127 -->
 - [x] 將 SharedPreferences 的 `|` 編碼改為 JSON 或 Room，加入 schema version 與 migration（已加入 v1 相容讀取與自動升級，待 Gradle CI 驗證） <!-- id: 128 -->
-- [ ] 將 PendingIntent request code 改為持久化唯一整數，避免 `hashCode()` 碰撞 <!-- id: 129 -->
+- [x] 將 PendingIntent request code 改為持久化唯一整數，避免 `hashCode()` 碰撞（已保留舊鬧鐘取消相容性，待 Gradle CI 驗證） <!-- id: 129 -->
 - [ ] 只有使用者可感知且真的需要準點的排程使用 exact alarm，其餘採 inexact/WorkManager <!-- id: 130 -->
 - [ ] 處理 exact-alarm 權限狀態變更 broadcast，重新排程或降級並通知使用者 <!-- id: 131 -->
 - [ ] 測試 once/daily/weekly、DST、重疊、重開機、權限移除與時鐘變更 <!-- id: 132 -->

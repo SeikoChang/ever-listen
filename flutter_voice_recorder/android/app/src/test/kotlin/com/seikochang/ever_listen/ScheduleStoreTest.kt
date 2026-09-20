@@ -161,6 +161,21 @@ class ScheduleStoreTest {
     }
 
     @Test
+    fun testSchedulesWithCollidingHashesGetDistinctRequestCodes() {
+        val first = RecordingSchedule("Aa", 5000L, 10000L, "once", "UTC", "detect", 0.6, 200)
+        val second = RecordingSchedule("BB", 15000L, 20000L, "once", "UTC", "detect", 0.6, 200)
+
+        ScheduleStore.add(context, first)
+        ScheduleStore.add(context, second)
+
+        val prefs = context.getSharedPreferences("ever_listen_schedules", Context.MODE_PRIVATE)
+        assertNotEquals(
+            prefs.getInt("schedule_request_code_Aa", 0),
+            prefs.getInt("schedule_request_code_BB", 0)
+        )
+    }
+
+    @Test
     fun testLegacyStorageIsReadAndMigratedToJson() {
         val prefs = context.getSharedPreferences("ever_listen_schedules", Context.MODE_PRIVATE)
         prefs.edit()

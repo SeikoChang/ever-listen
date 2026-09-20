@@ -32,6 +32,8 @@ data class RecordingSchedule(
 object ScheduleStore {
     private const val PREFS_NAME = "ever_listen_schedules"
     private const val KEY_IDS = "schedule_ids"
+    private const val KEY_NEXT_REQUEST_CODE = "next_schedule_request_code"
+    private const val REQUEST_CODE_START = 1000
     private const val ACTION_START = "com.seikochang.ever_listen.SCHEDULE_START"
     private const val ACTION_STOP = "com.seikochang.ever_listen.SCHEDULE_STOP"
     private const val CURRENT_SCHEMA_VERSION = 2
@@ -47,7 +49,11 @@ object ScheduleStore {
         cancelAlarms(context, schedule)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val ids = ids(context).filterNot { it == id }.toSet()
-        prefs.edit().remove(key(id)).putStringSet(KEY_IDS, ids).apply()
+        prefs.edit()
+            .remove(key(id))
+            .remove(requestCodeKey(id))
+            .putStringSet(KEY_IDS, ids)
+            .apply()
         return true
     }
 
@@ -141,10 +147,30 @@ object ScheduleStore {
 
     private fun key(id: String) = "schedule_$id"
 
+    private fun requestCodeKey(id: String) = "schedule_request_code_$id"
+
+    private fun requestCode(context: Context, id: String): Int {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val existing = prefs.getInt(requestCodeKey(id), 0)
+        if (existing > 0) return existing
+
+        val used = ids(context).mapNotNull { candidate ->
+            prefs.getInt(requestCodeKey(candidate), 0).takeIf { it > 0 }
+        }.toSet()
+        var next = maxOf(prefs.getInt(KEY_NEXT_REQUEST_CODE, REQUEST_CODE_START), REQUEST_CODE_START)
+        while (next in used) next++
+        prefs.edit()
+            .putInt(requestCodeKey(id), next)
+            .putInt(KEY_NEXT_REQUEST_CODE, next + 1)
+            .apply()
+        return next
+    }
+
     private fun setAlarms(context: Context, schedule: RecordingSchedule) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        setAlarm(alarmManager, schedule.startTimeMillis, intent(context, schedule, ACTION_START, 1))
-        setAlarm(alarmManager, schedule.endTimeMillis, intent(context, schedule, ACTION_STOP, 2))
+        val baseRequestCode = requestCode(context, schedule.id)
+        setAlarm(alarmManager, schedule.startTimeMillis, intent(context, schedule, ACTION_START, baseRequestCode + 1))
+        setAlarm(alarmManager, schedule.endTimeMillis, intent(context, schedule, ACTION_STOP, baseRequestCode + 2))
     }
 
     private fun setAlarm(alarmManager: AlarmManager, triggerAtMillis: Long, pendingIntent: PendingIntent) {
@@ -165,8 +191,12 @@ object ScheduleStore {
 
     private fun cancelAlarms(context: Context, schedule: RecordingSchedule) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.cancel(intent(context, schedule, ACTION_START, 1))
-        alarmManager.cancel(intent(context, schedule, ACTION_STOP, 2))
+        val baseRequestCode = requestCode(context, schedule.id)
+        alarmManager.cancel(intent(context, schedule, ACTION_START, baseRequestCode + 1))
+        alarmManager.cancel(intent(context, schedule, ACTION_STOP, baseRequestCode + 2))
+        // Cancel alarms created by versions that used String.hashCode().
+        alarmManager.cancel(intent(context, schedule, ACTION_START, schedule.id.hashCode() + 1))
+        alarmManager.cancel(intent(context, schedule, ACTION_STOP, schedule.id.hashCode() + 2))
     }
 
     private fun intent(
