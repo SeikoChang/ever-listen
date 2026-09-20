@@ -33,6 +33,12 @@ jobs:
           channel: 'stable'
       - run: cd flutter_voice_recorder && flutter pub get
       - run: cd flutter_voice_recorder/android && ./gradlew test --no-daemon --console=plain
+      - run: cd flutter_voice_recorder && flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ever-listen-android-debug-apk
+          path: flutter_voice_recorder/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
 
   ios-simulator-test:
     runs-on: macos-14
