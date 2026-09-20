@@ -187,7 +187,7 @@
 - [ ] 以 local wall-clock + timezone 計算 daily/weekly recurrence，正確處理 DST <!-- id: 124 -->
 - [ ] 定義重疊排程的拒絕、合併或優先權規則並實作 <!-- id: 125 -->
 - [ ] 定義 missed window 行為：立即啟動、標記 missed 或跳到下一次 <!-- id: 126 -->
-- [ ] 修正 BootReceiver 在重開機時略過仍位於有效區間內排程的問題 <!-- id: 127 -->
+- [x] 修正 BootReceiver 在重開機時略過仍位於有效區間內排程的問題（已補回歸測試，待 Gradle CI 驗證） <!-- id: 127 -->
 - [ ] 將 SharedPreferences 的 `|` 編碼改為 JSON 或 Room，加入 schema version 與 migration <!-- id: 128 -->
 - [ ] 將 PendingIntent request code 改為持久化唯一整數，避免 `hashCode()` 碰撞 <!-- id: 129 -->
 - [ ] 只有使用者可感知且真的需要準點的排程使用 exact alarm，其餘採 inexact/WorkManager <!-- id: 130 -->

@@ -134,6 +134,28 @@ class BootReceiverTest {
     }
 
     @Test
+    fun testBootReceiverPreservesActiveRecurringWindow() {
+        val now = System.currentTimeMillis()
+        val activeSchedule = RecordingSchedule(
+            id = "active-daily",
+            startTimeMillis = now - 30 * 60 * 1000L,
+            endTimeMillis = now + 30 * 60 * 1000L,
+            repeat = "daily",
+            timezone = "UTC",
+            mode = "monitor",
+            sensitivity = 0.7,
+            maxStorageMb = 300
+        )
+        ScheduleStore.add(context, activeSchedule)
+
+        BootReceiver().onReceive(context, Intent(Intent.ACTION_BOOT_COMPLETED))
+
+        val restored = ScheduleStore.list(context).single()
+        assertEquals(activeSchedule.startTimeMillis, restored.startTimeMillis)
+        assertEquals(activeSchedule.endTimeMillis, restored.endTimeMillis)
+    }
+
+    @Test
     fun testBootReceiverWithEmptyScheduleList() {
         // No schedules added — should not crash
         val receiver = BootReceiver()

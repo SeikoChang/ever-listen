@@ -20,6 +20,14 @@ class BootReceiver : BroadcastReceiver() {
                 } else {
                     Log.d(TAG, "Rescheduling alarms for schedule: ${schedule.id}")
                     if (schedule.repeat != "once" && schedule.startTimeMillis <= now) {
+                        // A reboot during an active recording window must not skip
+                        // that window. Keep the current occurrence and restore its
+                        // start/stop alarms below.
+                        if (schedule.endTimeMillis > now) {
+                            ScheduleStore.add(context, schedule)
+                            continue
+                        }
+
                         var tempSchedule = schedule
                         val interval = when (schedule.repeat) {
                             "daily" -> 24L * 60L * 60L * 1000L
