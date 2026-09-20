@@ -11,7 +11,7 @@ void main() {
   // Set up mock method channel handler
   setUp(() {
     log.clear();
-    
+
     // In newer Flutter versions, use TestDefaultBinaryMessengerBinding
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
@@ -37,6 +37,8 @@ void main() {
               'storageUsedMb': 12.5,
               'schedules': []
             };
+          case 'openAppSettings':
+            return true;
           case 'scheduleRecording':
             return {
               'id': methodCall.arguments['id'] ?? 'test-id',
@@ -78,7 +80,8 @@ void main() {
     );
   });
 
-  test('startRecording invokes method channel with correct arguments', () async {
+  test('startRecording invokes method channel with correct arguments',
+      () async {
     await recorder.startRecording(
       mode: 'monitor',
       sensitivity: 0.8,
@@ -100,6 +103,15 @@ void main() {
     expect(log, hasLength(1));
     expect(log.single.method, 'stopRecording');
     expect(log.single.arguments, null);
+  });
+
+  test('openAppSettings invokes method channel and returns result', () async {
+    final opened = await recorder.openAppSettings();
+
+    expect(log, hasLength(1));
+    expect(log.single.method, 'openAppSettings');
+    expect(log.single.arguments, null);
+    expect(opened, true);
   });
 
   test('setSensitivity invokes method channel', () async {
@@ -159,7 +171,8 @@ void main() {
     expect(res['maxStorageMb'], 150);
   });
 
-  test('cancelSchedule invokes method channel and returns cancelled status', () async {
+  test('cancelSchedule invokes method channel and returns cancelled status',
+      () async {
     final cancelled = await recorder.cancelSchedule('schedule-1');
 
     expect(log, hasLength(1));
