@@ -25,11 +25,30 @@ android {
         versionName = flutter.versionName
     }
 
+    // Release credentials are supplied through Gradle properties or CI
+    // secrets. Never fall back to the debug keystore for a release artifact.
+    val releaseStoreFile = providers.gradleProperty("releaseStoreFile").orNull
+    val releaseStorePassword = providers.gradleProperty("releaseStorePassword").orNull
+    val releaseKeyAlias = providers.gradleProperty("releaseKeyAlias").orNull
+    val releaseKeyPassword = providers.gradleProperty("releaseKeyPassword").orNull
+
+    signingConfigs {
+        if (releaseStoreFile != null && releaseStorePassword != null &&
+            releaseKeyAlias != null && releaseKeyPassword != null
+        ) {
+            create("release") {
+                storeFile = file(checkNotNull(releaseStoreFile))
+                storePassword = checkNotNull(releaseStorePassword)
+                keyAlias = checkNotNull(releaseKeyAlias)
+                keyPassword = checkNotNull(releaseKeyPassword)
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // An unsigned release is preferable to silently shipping a debug-signed artifact.
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 
