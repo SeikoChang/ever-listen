@@ -8,6 +8,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
   private static let eventChannelName = "ever_listen/events"
   private static let schedulesKey = "ever_listen.schedules"
   private static let reminderIdentifierPrefix = "com.seikochang.everlisten.recording-reminder."
+  private static weak var sharedInstance: RecorderPlugin?
 
   private var eventSink: FlutterEventSink?
   private var recorder: AudioEngineRecorder?
@@ -16,6 +17,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
 
   override init() {
     super.init()
+    Self.sharedInstance = self
   }
 
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -31,6 +33,16 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
       binaryMessenger: registrar.messenger()
     )
     eventChannel.setStreamHandler(instance)
+  }
+
+  public static func handleReminderDelivery(_ notification: UNNotification) {
+    guard let id = notification.request.content.userInfo["scheduleId"] as? String else { return }
+    sharedInstance?.sendEvent("recordingReminderDelivered", ["id": id])
+  }
+
+  public static func handleReminderResponse(_ response: UNNotificationResponse) {
+    guard let id = response.notification.request.content.userInfo["scheduleId"] as? String else { return }
+    sharedInstance?.sendEvent("recordingReminderOpened", ["id": id])
   }
 
   public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
