@@ -59,6 +59,8 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
       recorder?.stop()
       recorder = nil
       result(["status": "stopped"])
+    case "requestPermissions":
+      requestPermissions(result: result)
     case "setSensitivity":
       let value = number(arguments["sensitivity"]) ?? sensitivity
       sensitivity = min(max(value, 0), 1)
@@ -122,6 +124,30 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     }
   }
 
+  private func requestPermissions(result: @escaping FlutterResult) {
+    let session = AVAudioSession.sharedInstance()
+    switch session.recordPermission {
+    case .granted:
+      result(["microphone": true, "notifications": true])
+    case .denied:
+      result(["microphone": false, "notifications": true])
+    case .undetermined:
+      session.requestRecordPermission { granted in
+        DispatchQueue.main.async {
+          // iOS does not require notification permission to show the recording
+          // indicator, so `notifications` is reported as not-applicable/granted.
+          result(["microphone": granted, "notifications": true])
+        }
+      }
+    @unknown default:
+      result(FlutterError(
+        code: "PERMISSION_STATUS_UNKNOWN",
+        message: "Unable to determine microphone permission status",
+        details: nil
+      ))
+    }
+  }
+
   private func scheduleRecording(arguments: [String: Any], result: FlutterResult) {
     guard let start = number(arguments["startTimeMillis"]),
           let end = number(arguments["endTimeMillis"]),
@@ -136,6 +162,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
       return
     }
 
+    let previousSchedules = loadSchedules()
     var schedule: [String: Any] = [
       "id": (arguments["id"] as? String) ?? UUID().uuidString,
       "startTimeMillis": Int64(start),
@@ -146,7 +173,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
       "sensitivity": min(max(number(arguments["sensitivity"]) ?? sensitivity, 0), 1),
       "maxStorageMb": max(Int(number(arguments["maxStorageMb"]) ?? Double(maxStorageMb)), 1)
     ]
-    var schedules = loadSchedules()
+    var schedules = previousSchedules
     schedules.removeAll { ($0["id"] as? String) == (schedule["id"] as? String) }
     schedules.append(schedule)
     saveSchedules(schedules)
@@ -154,6 +181,12 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
       try submitNextBackgroundTask()
       result(schedule)
     } catch {
+      // `submitNextBackgroundTask()` normalizes persisted schedules before it
+      // submits the BG request, so persist first then restore the previous
+      // state if submission fails. This prevents a failed request from being
+      // displayed as a valid schedule in Flutter.
+      saveSchedules(previousSchedules)
+      try? submitNextBackgroundTask()
       result(FlutterError(code: "SCHEDULE_FAILED", message: error.localizedDescription, details: nil))
     }
   }
@@ -364,6 +397,9 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
 }
 
 private final class AudioEngineRecorder {
+  fileprivate static let vadSampleRate = 16_000.0
+  fileprivate static let vadFrameSampleCount = 320 // 20 ms at 16 kHz
+
   let mode: String
   var sensitivity: Double {
     didSet { vadProcessor?.setSensitivity(sensitivity) }
@@ -378,6 +414,15 @@ private final class AudioEngineRecorder {
   private(set) var currentFilePath = ""
   private let directory: URL
   private var vadProcessor: WebRTCVADProcessor?
+  private let vadFormat = AVAudioFormat(
+    commonFormat: .pcmFormatInt16,
+    sampleRate: vadSampleRate,
+    channels: 1,
+    interleaved: false
+  )!
+  private var vadSourceFormat: AVAudioFormat?
+  private var vadConverter: AVAudioConverter?
+  private var pendingVADSamples: [Int16] = []
 
   var storageUsedMb: Double { storageBytes() / (1024 * 1024) }
 
@@ -399,6 +444,9 @@ private final class AudioEngineRecorder {
 
     let input = engine.inputNode
     let format = input.outputFormat(forBus: 0)
+    vadSourceFormat = nil
+    vadConverter = nil
+    pendingVADSamples.removeAll(keepingCapacity: true)
     input.installTap(onBus: 0, bufferSize: 480, format: format) { [weak self] buffer, _ in
       self?.process(buffer)
     }
@@ -431,7 +479,7 @@ private final class AudioEngineRecorder {
       return
     }
 
-    let speech = vadProcessor?.process(buffer) ?? (rms(buffer) > (0.02 + (1 - sensitivity) * 0.08))
+    let speech = processVAD(buffer) ?? (rms(buffer) > (0.02 + (1 - sensitivity) * 0.08))
     if speech {
       silenceFrames = 0
       if !speechActive {
@@ -461,6 +509,65 @@ private final class AudioEngineRecorder {
     var sum: Float = 0
     for index in 0..<count { sum += data[index] * data[index] }
     return sqrt(sum / Float(count))
+  }
+
+  /// WebRTC VAD accepts only mono PCM16 frames at supported sample rates and
+  /// durations. Hardware input is commonly Float32 at 44.1/48 kHz, so convert
+  /// it separately from the file-writing path and feed fixed 20 ms frames.
+  private func processVAD(_ buffer: AVAudioPCMBuffer) -> Bool? {
+    guard let samples = convertedVADSamples(from: buffer) else { return nil }
+    pendingVADSamples.append(contentsOf: samples)
+
+    var processedFrame = false
+    var speechDetected = false
+    while pendingVADSamples.count >= Self.vadFrameSampleCount {
+      let frame = Array(pendingVADSamples.prefix(Self.vadFrameSampleCount))
+      pendingVADSamples.removeFirst(Self.vadFrameSampleCount)
+      guard let isSpeech = vadProcessor?.process(frame) else { return nil }
+      processedFrame = true
+      speechDetected = speechDetected || isSpeech
+    }
+    return processedFrame ? speechDetected : nil
+  }
+
+  private func convertedVADSamples(from buffer: AVAudioPCMBuffer) -> [Int16]? {
+    if vadConverter == nil ||
+      vadSourceFormat?.sampleRate != buffer.format.sampleRate ||
+      vadSourceFormat?.channelCount != buffer.format.channelCount {
+      vadSourceFormat = buffer.format
+      vadConverter = AVAudioConverter(from: buffer.format, to: vadFormat)
+    }
+    guard let converter = vadConverter else { return nil }
+
+    let convertedCapacity = AVAudioFrameCount(
+      ceil(Double(buffer.frameLength) * Self.vadSampleRate / buffer.format.sampleRate)
+    )
+    guard convertedCapacity > 0,
+      let converted = AVAudioPCMBuffer(pcmFormat: vadFormat, frameCapacity: convertedCapacity) else {
+      return nil
+    }
+
+    var hasSuppliedInput = false
+    var conversionError: NSError?
+    let status = converter.convert(to: converted, error: &conversionError) { _, inputStatus in
+      if hasSuppliedInput {
+        inputStatus.pointee = .noDataNow
+        return nil
+      }
+      hasSuppliedInput = true
+      inputStatus.pointee = .haveData
+      return buffer
+    }
+    if let conversionError {
+      emit("error", ["message": "VAD audio conversion failed: \(conversionError.localizedDescription)"])
+      return nil
+    }
+    guard status == .haveData || status == .inputRanDry,
+      let data = converted.int16ChannelData?[0] else {
+      emit("error", ["message": "VAD audio conversion did not produce PCM16 data"])
+      return nil
+    }
+    return Array(UnsafeBufferPointer(start: data, count: Int(converted.frameLength)))
   }
 
   private func openFileIfNeeded(format: AVAudioFormat) throws {
@@ -544,24 +651,13 @@ private final class WebRTCVADProcessor {
     handle = vad_init(aggressiveness)
   }
 
-  /// Process an AVAudioPCMBuffer and return true if speech is detected.
-  /// Returns nil if the native VAD is unavailable (triggers RMS fallback).
-  func process(_ buffer: AVAudioPCMBuffer) -> Bool? {
+  /// Process one mono PCM16 frame at 16 kHz. Returns nil if the native VAD is
+  /// unavailable, which lets the caller use the RMS fallback.
+  func process(_ samples: [Int16]) -> Bool? {
     guard let handle = handle else { return nil }
-
-    // Convert float samples to int16 for WebRTC VAD
-    guard let floatData = buffer.floatChannelData?[0] else { return nil }
-    let frameLength = Int(buffer.frameLength)
-    guard frameLength > 0 else { return nil }
-
-    var samples16 = [Int16](repeating: 0, count: frameLength)
-    for i in 0..<frameLength {
-      let clamped = floatData[i].clamped(to: -1.0...1.0)
-      samples16[i] = Int16(clamped * Float(Int16.max))
-    }
-
-    return samples16.withUnsafeBufferPointer { ptr in
-      let result = vad_process(handle, ptr.baseAddress!.assumingMemoryBound(to: Int16.self), frameLength)
+    guard samples.count == AudioEngineRecorder.vadFrameSampleCount else { return nil }
+    return samples.withUnsafeBufferPointer { pointer in
+      let result = vad_process(handle, pointer.baseAddress!, samples.count)
       return result == 1
     }
   }
