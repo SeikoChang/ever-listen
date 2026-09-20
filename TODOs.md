@@ -244,7 +244,7 @@
 - [ ] 在乾淨環境重新建置 Android native artifacts，排除 NDK/CMake 警告 <!-- id: 164 -->
 - [ ] 重寫根目錄與 Flutter README：產品目的、架構、建置、測試、限制及隱私 <!-- id: 165 -->
 - [ ] 更新 `AGENT.md`、`TODOs.md` 與實際 build/test 狀態，建立每次 release 的文件檢查 <!-- id: 166 -->
-- [ ] 清理或移出 `result.txt`、`result_short.txt`、`docs/tmp*` 等暫存/產出物並補 `.gitignore` <!-- id: 167 -->
+- [x] 清理或移出 `result.txt`、`result_short.txt`、`docs/tmp*` 等暫存/產出物並補 `.gitignore` <!-- id: 167 -->
 
 ### 13.4 實機與 OEM 測試矩陣
 
