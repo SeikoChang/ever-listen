@@ -133,7 +133,7 @@
 
 - [ ] 建立 idempotent 的單一 shutdown/cleanup 路徑 *(已實作，待 Gradle 測試)* <!-- id: 85 -->
 - [ ] 讓正常停止、read error、初始化失敗與未捕捉例外都釋放 `AudioRecord`、writer、wake lock 與 foreground service *(已實作，待 Gradle 測試)* <!-- id: 86 -->
-- [ ] 即使尚未進入 recording，STOP intent 仍會正確 `stopSelf()` 並更新狀態 <!-- id: 87 -->
+- [x] 即使尚未進入 recording，STOP intent 仍會正確 `stopSelf()` 並更新狀態（已由 cleanup 路徑處理，待 Gradle 測試） <!-- id: 87 -->
 - [ ] 修正 detect mode 觸發時 current frame 同時存在於 pre-roll 與當前寫入所造成的重複資料 *(已實作，待 Gradle 測試)* <!-- id: 88 -->
 - [ ] 以可辨識 sample pattern 逐 byte 驗證 pre-roll 與觸發 frame 輸出 *(測試已加入，待 Gradle 測試)* <!-- id: 89 -->
 - [ ] 只有實體檔刪除成功後才扣除 storage 統計並送出 `storagePruned` *(已實作，待 Gradle 測試)* <!-- id: 90 -->
@@ -141,7 +141,7 @@
 
 ### 11.5 正式簽署、隱私與 API 對稱
 
-- [ ] Android release 已移除 debug signing 並支援 Gradle property 注入，待正式 keystore/CI secret 驗證 <!-- id: 92 -->
+- [x] Android release 已移除 debug signing 並支援 Gradle property 注入，待正式 keystore/CI secret 驗證 <!-- id: 92 -->
 - [ ] 由 CI secrets 或本機安全設定注入 Android release signing credentials <!-- id: 93 -->
 - [ ] 建立可重現的 `flutter build appbundle --release` gate 與 artifact <!-- id: 94 -->
 - [ ] 實作首次使用隱私與錄音同意說明，清楚解釋麥克風、背景執行與儲存用途 <!-- id: 95 -->
