@@ -239,7 +239,7 @@
 
 - [ ] 將 Android 大型 service/plugin 拆為 RecorderEngine、StateMachine、Scheduler、Storage、PermissionManager <!-- id: 160 -->
 - [ ] 將 iOS 大型 plugin/recorder 依相同職責拆分並導入 dependency injection <!-- id: 161 -->
-- [ ] 移除 `android.builtInKotlin=false`、`android.newDsl=false` 與 AGP 9 不需要的 Kotlin Android plugin <!-- id: 162 -->
+- [x] 移除 `android.builtInKotlin=false`、`android.newDsl=false` 與 AGP 9 不需要的 Kotlin Android plugin（待 Gradle CI 驗證） <!-- id: 162 -->
 - [ ] 鎖定並文件化 JDK、Flutter、Dart、AGP、Gradle、Kotlin、NDK 與 Xcode 版本 <!-- id: 163 -->
 - [ ] 在乾淨環境重新建置 Android native artifacts，排除 NDK/CMake 警告 <!-- id: 164 -->
 - [ ] 重寫根目錄與 Flutter README：產品目的、架構、建置、測試、限制及隱私 <!-- id: 165 -->
