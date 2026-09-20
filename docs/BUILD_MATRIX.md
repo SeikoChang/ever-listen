@@ -4,7 +4,7 @@
 
 | 項目 | 目前設定/觀察值 | 來源 | 狀態 |
 |---|---|---|---|
-| Flutter / Dart | CI 固定 Flutter `3.19.0` stable；`pubspec.yaml` 要求 Dart `>=3.0.0 <4.0.0` | `.github/workflows/flutter-ci.yml`, `pubspec.yaml` | Flutter/Dart gates 已宣告，待 CI 實際通過 |
+| Flutter / Dart | CI 固定 Flutter `3.41.4` stable（本機已確認 Dart `3.11.1`）；`pubspec.yaml` 要求 Dart `>=3.0.0 <4.0.0` | `.github/workflows/flutter-ci.yml`, `pubspec.yaml` | Flutter/Dart gates 已宣告，待 CI 實際通過 |
 | Android Gradle Plugin | `9.0.1` | `android/settings.gradle.kts` | 已固定 |
 | Gradle wrapper | `9.1.0-all` | `android/gradle/wrapper/gradle-wrapper.properties` | 已固定 |
 | Kotlin | 使用 AGP 9 built-in Kotlin；不再套用 Kotlin Android plugin | `android/app/build.gradle.kts` | 已完成 migration，待 Gradle CI 驗證 |
