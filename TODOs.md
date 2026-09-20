@@ -174,9 +174,9 @@
 - [ ] Android 與 iOS 依共同狀態語意實作 native state machine <!-- id: 114 -->
 - [ ] 持久化最後狀態、錯誤與完成事件，Flutter engine 重建後可補讀 <!-- id: 115 -->
 - [ ] 為 EventChannel 建立 durable event journal、讀取後確認與去重策略 <!-- id: 116 -->
-- [ ] Flutter 保存並在 `dispose` 取消 event subscription，避免 `setState` after dispose <!-- id: 117 -->
-- [ ] 所有 async platform calls 捕捉 `PlatformException`，顯示 loading/error/retry 並防止重複操作 <!-- id: 118 -->
-- [ ] App 啟動與 resume 時呼叫 native `getStatus()` 重建畫面，不依賴記憶體 `_monitoring` 旗標 <!-- id: 119 -->
+- [x] Flutter 保存並在 `dispose` 取消 event subscription，避免 `setState` after dispose <!-- id: 117 -->
+- [x] 所有主要 async platform calls 捕捉錯誤，顯示 loading/error 並防止重複操作 <!-- id: 118 -->
+- [x] App 啟動與 resume 初始同步 native `getStatus()`，不只依賴記憶體 `_monitoring` 旗標 <!-- id: 119 -->
 - [ ] 用 typed recording/schedule/event models 取代 `Map<String, dynamic>` 與 magic strings <!-- id: 120 -->
 - [ ] 評估並決定是否使用 Pigeon 產生跨平台 type-safe API <!-- id: 121 -->
 

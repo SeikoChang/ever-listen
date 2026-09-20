@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
@@ -37,48 +38,106 @@ class _RecorderHomeState extends State<RecorderHome> {
   DateTime _scheduleEnd = DateTime.now().add(const Duration(minutes: 6));
   String _repeat = 'once';
   List<Map<String, dynamic>> _schedules = [];
+  StreamSubscription<Map<String, dynamic>>? _eventSubscription;
+  bool _busy = false;
 
-  void _toggleRecording() async {
-    if (_monitoring) {
-      await _recorder.stopRecording();
+  Future<void> _toggleRecording() async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+    });
+    try {
+      if (_monitoring) {
+        await _recorder.stopRecording();
+        if (!mounted) return;
+        setState(() {
+          _monitoring = false;
+          _status = 'stopped';
+        });
+      } else {
+        await _recorder.setSensitivity(_sensitivity);
+        await _recorder.setMaxStorageMb(_maxStorageMb);
+        await _recorder.startRecording(
+          mode: _mode,
+          sensitivity: _sensitivity,
+          maxStorageMb: _maxStorageMb,
+        );
+        if (!mounted) return;
+        setState(() {
+          _monitoring = true;
+          _status = 'recording';
+        });
+      }
+    } catch (error) {
+      if (!mounted) return;
       setState(() {
-        _monitoring = false;
-        _status = 'stopped';
+        _status = 'Recording failed: $error';
       });
-    } else {
-      await _recorder.setSensitivity(_sensitivity);
-      await _recorder.setMaxStorageMb(_maxStorageMb);
-      await _recorder.startRecording(
-        mode: _mode,
-        sensitivity: _sensitivity,
-        maxStorageMb: _maxStorageMb,
-      );
-      setState(() {
-        _monitoring = true;
-        _status = 'recording';
-      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+        });
+      }
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _recorder.events.listen((e) {
-      setState(() {
-        final type = e['type']?.toString() ?? 'event';
-        final data = e['data'];
-        _status = data == null ? type : '$type $data';
-      });
-    });
+    _eventSubscription = _recorder.events.listen(
+      _handleEvent,
+      onError: (Object error, StackTrace stackTrace) {
+        if (!mounted) return;
+        setState(() {
+          _status = 'Native event failed: $error';
+        });
+      },
+    );
+    unawaited(_refreshStatus());
     _refreshSchedules();
   }
 
-  Future<void> _refreshSchedules() async {
-    final schedules = await _recorder.getSchedules();
+  void _handleEvent(Map<String, dynamic> event) {
     if (!mounted) return;
+    final type = event['type']?.toString() ?? 'event';
+    final data = event['data'];
     setState(() {
-      _schedules = schedules;
+      if (type == 'recordingStarted') _monitoring = true;
+      if (type == 'recordingStopped' || type == 'error') _monitoring = false;
+      _status = data == null ? type : '$type $data';
     });
+  }
+
+  Future<void> _refreshStatus() async {
+    try {
+      final status = await _recorder.getStatus();
+      if (!mounted || status == null) return;
+      setState(() {
+        _monitoring = status['running'] == true;
+        _status = _monitoring ? 'recording' : 'idle';
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _status = 'Unable to load recorder status: $error';
+      });
+    }
+  }
+
+  Future<void> _refreshSchedules() async {
+    try {
+      final schedules = await _recorder.getSchedules();
+      if (!mounted) return;
+      setState(() {
+        _schedules = schedules;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _status = 'Unable to load schedules: $error';
+      });
+    }
   }
 
   Future<void> _pickScheduleTime({required bool start}) async {
@@ -124,36 +183,56 @@ class _RecorderHomeState extends State<RecorderHome> {
       return;
     }
 
-    if (Platform.isIOS) {
-      final permissions = await _recorder.requestPermissions();
-      if (permissions['notifications'] != true) {
-        setState(() {
-          _status = 'Notifications are required for iOS recording reminders';
-        });
-        return;
+    try {
+      if (Platform.isIOS) {
+        final permissions = await _recorder.requestPermissions();
+        if (permissions['notifications'] != true) {
+          setState(() {
+            _status = 'Notifications are required for iOS recording reminders';
+          });
+          return;
+        }
       }
-    }
 
-    await _recorder.scheduleRecording(
-      startTime: _scheduleStart,
-      endTime: _scheduleEnd,
-      repeat: _repeat,
-      timezone: DateTime.now().timeZoneName,
-      mode: 'schedule',
-      sensitivity: _sensitivity,
-      maxStorageMb: _maxStorageMb,
-    );
-    setState(() {
-      _status = Platform.isIOS
-          ? 'recording reminder created'
-          : 'schedule created';
-    });
-    await _refreshSchedules();
+      await _recorder.scheduleRecording(
+        startTime: _scheduleStart,
+        endTime: _scheduleEnd,
+        repeat: _repeat,
+        timezone: DateTime.now().timeZoneName,
+        mode: 'schedule',
+        sensitivity: _sensitivity,
+        maxStorageMb: _maxStorageMb,
+      );
+      if (!mounted) return;
+      setState(() {
+        _status =
+            Platform.isIOS ? 'recording reminder created' : 'schedule created';
+      });
+      await _refreshSchedules();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _status = 'Unable to create schedule: $error';
+      });
+    }
   }
 
   Future<void> _cancelSchedule(String id) async {
-    await _recorder.cancelSchedule(id);
-    await _refreshSchedules();
+    try {
+      await _recorder.cancelSchedule(id);
+      await _refreshSchedules();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _status = 'Unable to cancel schedule: $error';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -279,7 +358,7 @@ class _RecorderHomeState extends State<RecorderHome> {
               ),
             ] else ...[
               ElevatedButton(
-                onPressed: _toggleRecording,
+                onPressed: _busy ? null : _toggleRecording,
                 child: Text(_monitoring ? 'Stop' : 'Start'),
               ),
             ],
