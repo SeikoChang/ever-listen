@@ -142,7 +142,7 @@
 ### 11.5 正式簽署、隱私與 API 對稱
 
 - [x] Android release 已移除 debug signing 並支援 Gradle property 注入，待正式 keystore/CI secret 驗證 <!-- id: 92 -->
-- [ ] 由 CI secrets 或本機安全設定注入 Android release signing credentials <!-- id: 93 -->
+- [ ] 由 CI secrets 或本機安全設定注入 Android release signing credentials（已文件化 Gradle properties 與 ignore 規則，待正式 CI secret/keystore） <!-- id: 93 -->
 - [ ] 建立可重現的 `flutter build appbundle --release` gate 與 artifact <!-- id: 94 -->
 - [ ] 實作首次使用隱私與錄音同意說明，清楚解釋麥克風、背景執行與儲存用途 <!-- id: 95 -->
 - [ ] Android 與 iOS 都提供明顯且持續的錄音中指示 <!-- id: 96 -->

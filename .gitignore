@@ -17,6 +17,11 @@ flutter_voice_recorder/build/
 **/result*.txt
 docs/tmp*.txt
 
+# Android signing material (never commit credentials or keystores)
+*.jks
+*.keystore
+**/key.properties
+
 # macOS
 .DS_Store
 

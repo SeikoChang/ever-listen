@@ -33,3 +33,16 @@ flutter test
 ```
 
 目前不應把本機 Gradle daemon/cache 的成功或失敗視為 release gate；正式判定以 CI 的乾淨 runner 結果為準。
+
+## Android release signing
+
+`android/app/build.gradle.kts` accepts these Gradle properties:
+
+```text
+releaseStoreFile=/secure/path/ever-listen-upload.jks
+releaseStorePassword=...
+releaseKeyAlias=...
+releaseKeyPassword=...
+```
+
+本機可透過 `~/.gradle/gradle.properties` 或 `-Pname=value` 注入；CI 應使用 encrypted secrets 與暫存 keystore 檔案。repository 只接受未含憑證的設定，不接受 `.jks`、`.keystore` 或 `key.properties`。
