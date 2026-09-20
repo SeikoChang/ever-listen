@@ -207,7 +207,7 @@
 ### 12.5 CI 與整合測試
 
 - [ ] CI 已加入 Dart format check、`flutter analyze` 與 `flutter test`，待 GitHub Actions 實際通過 <!-- id: 140 -->
-- [ ] CI Linux job 使用鎖定的 JDK/Flutter/AGP/NDK 執行 Android unit tests <!-- id: 141 -->
+- [ ] CI 已加入 Ubuntu + JDK 17 Android unit-test job，待 GitHub Actions 實際通過 <!-- id: 141 -->
 - [ ] CI 建置 Android debug APK 與正式簽署的 release AAB <!-- id: 142 -->
 - [ ] CI macOS job 執行 iOS RunnerTests 與 simulator no-codesign build <!-- id: 143 -->
 - [ ] 建立跨平台 MethodChannel contract tests 與核心 feature parity tests <!-- id: 144 -->
