@@ -40,6 +40,7 @@ class _RecorderHomeState extends State<RecorderHome> {
   List<Map<String, dynamic>> _schedules = [];
   StreamSubscription<Map<String, dynamic>>? _eventSubscription;
   bool _busy = false;
+  String? _pendingReminderId;
 
   Future<void> _toggleRecording() async {
     if (_busy) return;
@@ -105,8 +106,25 @@ class _RecorderHomeState extends State<RecorderHome> {
     setState(() {
       if (type == 'recordingStarted') _monitoring = true;
       if (type == 'recordingStopped' || type == 'error') _monitoring = false;
+      if (type == 'recordingReminderDelivered' ||
+          type == 'recordingReminderOpened') {
+        _pendingReminderId =
+            data is Map ? data['id']?.toString() : _pendingReminderId;
+      }
       _status = data == null ? type : '$type $data';
     });
+  }
+
+  Future<void> _startFromReminder() async {
+    setState(() {
+      _mode = 'detect';
+    });
+    await _toggleRecording();
+    if (mounted && _monitoring) {
+      setState(() {
+        _pendingReminderId = null;
+      });
+    }
   }
 
   Future<void> _refreshStatus() async {
@@ -285,6 +303,14 @@ class _RecorderHomeState extends State<RecorderHome> {
             ]),
             const SizedBox(height: 20),
             Text('Status: $_status'),
+            if (_pendingReminderId != null && !_monitoring) ...[
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                onPressed: _busy ? null : _startFromReminder,
+                icon: const Icon(Icons.mic),
+                label: const Text('Start now'),
+              ),
+            ],
             const SizedBox(height: 20),
             if (_mode == 'schedule') ...[
               if (Platform.isIOS) ...[
