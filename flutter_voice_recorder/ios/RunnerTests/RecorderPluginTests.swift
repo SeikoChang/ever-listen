@@ -27,6 +27,14 @@ final class RecorderPluginScheduleTests: XCTestCase {
     XCTAssertTrue(schedules.isEmpty)
   }
 
+  func testMalformedStoredSchedulesFailClosed() {
+    UserDefaults.standard.set(Data("not-json".utf8), forKey: "ever_listen.schedules")
+
+    let schedules = plugin.loadSchedules()
+
+    XCTAssertTrue(schedules.isEmpty)
+  }
+
   func testSaveAndLoadSchedules() {
     let schedule: [String: Any] = [
       "id": "test-1",
