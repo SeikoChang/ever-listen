@@ -15,4 +15,6 @@ jobs:
           flutter-version: '3.19.0'
           channel: 'stable'
       - run: cd flutter_voice_recorder && flutter pub get
+      - run: cd flutter_voice_recorder && dart format --output=none --set-exit-if-changed lib test
       - run: cd flutter_voice_recorder && flutter analyze
+      - run: cd flutter_voice_recorder && flutter test

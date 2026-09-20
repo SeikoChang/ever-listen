@@ -113,12 +113,12 @@
 
 ### 11.2 iOS 音訊與 VAD 正確性
 
-- [ ] 以 `AVAudioConverter` 將硬體輸入轉為 mono PCM16 16 kHz <!-- id: 73 -->
-- [ ] 將 VAD 輸入切成合法的 10/20/30 ms frame（160/320/480 samples） <!-- id: 74 -->
-- [ ] 將錄音輸出 pipeline 與 VAD 分析 pipeline 分離，不再假設硬體輸入格式為 16 kHz <!-- id: 75 -->
+- [ ] 以 `AVAudioConverter` 將硬體輸入轉為 mono PCM16 16 kHz *(已實作，待完整 Xcode typecheck/音檔測試)* <!-- id: 73 -->
+- [ ] 將 VAD 輸入切成合法的 10/20/30 ms frame（160/320/480 samples） *(已實作，待完整 Xcode typecheck/音檔測試)* <!-- id: 74 -->
+- [ ] 將錄音輸出 pipeline 與 VAD 分析 pipeline 分離，不再假設硬體輸入格式為 16 kHz *(已實作，待完整 Xcode typecheck)* <!-- id: 75 -->
 - [ ] 加入 44.1 kHz、48 kHz、單聲道與多聲道轉換測試 <!-- id: 76 -->
 - [ ] 使用固定音檔建立 deterministic VAD 測試，驗證語音/靜音及 sensitivity 邊界 <!-- id: 77 -->
-- [ ] 驗證不會再出現 unsupported frame length/sample rate，並將錯誤回傳 Flutter <!-- id: 78 -->
+- [ ] 驗證不會再出現 unsupported frame length/sample rate，並將錯誤回傳 Flutter *(已加入錯誤事件，待完整 Xcode/VAD 測試)* <!-- id: 78 -->
 
 ### 11.3 iOS 排程產品承諾與 BGTaskScheduler
 
@@ -131,13 +131,13 @@
 
 ### 11.4 Android RecorderService 資料與資源安全
 
-- [ ] 建立 idempotent 的單一 shutdown/cleanup 路徑 <!-- id: 85 -->
-- [ ] 讓正常停止、read error、初始化失敗與未捕捉例外都釋放 `AudioRecord`、writer、wake lock 與 foreground service <!-- id: 86 -->
+- [ ] 建立 idempotent 的單一 shutdown/cleanup 路徑 *(已實作，待 Gradle 測試)* <!-- id: 85 -->
+- [ ] 讓正常停止、read error、初始化失敗與未捕捉例外都釋放 `AudioRecord`、writer、wake lock 與 foreground service *(已實作，待 Gradle 測試)* <!-- id: 86 -->
 - [ ] 即使尚未進入 recording，STOP intent 仍會正確 `stopSelf()` 並更新狀態 <!-- id: 87 -->
-- [ ] 修正 detect mode 觸發時 current frame 同時存在於 pre-roll 與當前寫入所造成的重複資料 <!-- id: 88 -->
-- [ ] 以可辨識 sample pattern 逐 byte 驗證 pre-roll 與觸發 frame 輸出 <!-- id: 89 -->
-- [ ] 只有實體檔刪除成功後才扣除 storage 統計並送出 `storagePruned` <!-- id: 90 -->
-- [ ] 補齊 read error、stop error、AudioRecord 未初始化與 writer failure 回歸測試 <!-- id: 91 -->
+- [ ] 修正 detect mode 觸發時 current frame 同時存在於 pre-roll 與當前寫入所造成的重複資料 *(已實作，待 Gradle 測試)* <!-- id: 88 -->
+- [ ] 以可辨識 sample pattern 逐 byte 驗證 pre-roll 與觸發 frame 輸出 *(測試已加入，待 Gradle 測試)* <!-- id: 89 -->
+- [ ] 只有實體檔刪除成功後才扣除 storage 統計並送出 `storagePruned` *(已實作，待 Gradle 測試)* <!-- id: 90 -->
+- [ ] 補齊 read error、stop error、AudioRecord 未初始化與 writer failure 回歸測試 *(測試已加入，待 Gradle 測試)* <!-- id: 91 -->
 
 ### 11.5 正式簽署、隱私與 API 對稱
 
@@ -206,7 +206,7 @@
 
 ### 12.5 CI 與整合測試
 
-- [ ] CI 加入 Dart format check、`flutter analyze` 與 `flutter test` <!-- id: 140 -->
+- [ ] CI 已加入 Dart format check、`flutter analyze` 與 `flutter test`，待 GitHub Actions 實際通過 <!-- id: 140 -->
 - [ ] CI Linux job 使用鎖定的 JDK/Flutter/AGP/NDK 執行 Android unit tests <!-- id: 141 -->
 - [ ] CI 建置 Android debug APK 與正式簽署的 release AAB <!-- id: 142 -->
 - [ ] CI macOS job 執行 iOS RunnerTests 與 simulator no-codesign build <!-- id: 143 -->
