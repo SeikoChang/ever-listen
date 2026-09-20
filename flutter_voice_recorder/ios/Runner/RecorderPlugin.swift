@@ -1,6 +1,7 @@
 import AVFoundation
 import Flutter
 import Foundation
+import UIKit
 import UserNotifications
 
 public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
@@ -69,6 +70,18 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
       result(["status": "stopped"])
     case "requestPermissions":
       requestPermissions(result: result)
+    case "openAppSettings":
+      guard let url = URL(string: UIApplication.openSettingsURLString) else {
+        result(FlutterError(code: "OPEN_SETTINGS_FAILED", message: "Settings URL is unavailable", details: nil))
+        return
+      }
+      UIApplication.shared.open(url) { opened in
+        if opened {
+          result(true)
+        } else {
+          result(FlutterError(code: "OPEN_SETTINGS_FAILED", message: "Unable to open system settings", details: nil))
+        }
+      }
     case "setSensitivity":
       let value = number(arguments["sensitivity"]) ?? sensitivity
       sensitivity = min(max(value, 0), 1)

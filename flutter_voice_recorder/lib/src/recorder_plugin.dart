@@ -30,6 +30,10 @@ class RecorderPlugin {
     return Map<String, dynamic>.from(res as Map);
   }
 
+  Future<bool> openAppSettings() async {
+    return await _channel.invokeMethod<bool>('openAppSettings') ?? false;
+  }
+
   Future<void> setSensitivity(double s) async {
     await _channel.invokeMethod('setSensitivity', {'sensitivity': s});
   }

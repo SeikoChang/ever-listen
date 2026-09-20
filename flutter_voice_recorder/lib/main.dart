@@ -40,6 +40,7 @@ class _RecorderHomeState extends State<RecorderHome> {
   List<Map<String, dynamic>> _schedules = [];
   StreamSubscription<Map<String, dynamic>>? _eventSubscription;
   bool _busy = false;
+  bool _showSettingsAction = false;
   String? _pendingReminderId;
 
   Future<void> _toggleRecording() async {
@@ -73,6 +74,7 @@ class _RecorderHomeState extends State<RecorderHome> {
       if (!mounted) return;
       setState(() {
         _status = 'Recording failed: $error';
+        _showSettingsAction = error.toString().contains('PERMISSION');
       });
     } finally {
       if (mounted) {
@@ -207,6 +209,7 @@ class _RecorderHomeState extends State<RecorderHome> {
         if (permissions['notifications'] != true) {
           setState(() {
             _status = 'Notifications are required for iOS recording reminders';
+            _showSettingsAction = true;
           });
           return;
         }
@@ -231,6 +234,7 @@ class _RecorderHomeState extends State<RecorderHome> {
       if (!mounted) return;
       setState(() {
         _status = 'Unable to create schedule: $error';
+        _showSettingsAction = error.toString().contains('PERMISSION');
       });
     }
   }
@@ -303,6 +307,21 @@ class _RecorderHomeState extends State<RecorderHome> {
             ]),
             const SizedBox(height: 20),
             Text('Status: $_status'),
+            if (_showSettingsAction)
+              TextButton.icon(
+                onPressed: () async {
+                  try {
+                    await _recorder.openAppSettings();
+                  } catch (error) {
+                    if (!mounted) return;
+                    setState(() {
+                      _status = 'Unable to open app settings: $error';
+                    });
+                  }
+                },
+                icon: const Icon(Icons.settings),
+                label: const Text('Open app settings'),
+              ),
             if (_pendingReminderId != null && !_monitoring) ...[
               const SizedBox(height: 8),
               ElevatedButton.icon(

@@ -73,6 +73,7 @@ class RecorderPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAw
             "cancelSchedule" -> handleCancelSchedule(call, result)
             "getSchedules" -> handleGetSchedules(result)
             "requestPermissions" -> handleRequestPermissions(result)
+            "openAppSettings" -> handleOpenAppSettings(result)
             "getStatus" -> handleGetStatus(result)
             else -> result.notImplemented()
         }
@@ -277,6 +278,24 @@ class RecorderPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAw
 
         permissionResult = result
         currentActivity.requestPermissions(permissions.toTypedArray(), REQUEST_RECORD_AUDIO)
+    }
+
+    private fun handleOpenAppSettings(result: MethodChannel.Result) {
+        val appContext = context
+        if (appContext == null) {
+            result.error("NO_CONTEXT", "The Android plugin is not attached", null)
+            return
+        }
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:${appContext.packageName}")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            appContext.startActivity(intent)
+            result.success(true)
+        } catch (e: Exception) {
+            result.error("OPEN_SETTINGS_FAILED", e.message, null)
+        }
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
