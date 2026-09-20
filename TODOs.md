@@ -122,12 +122,12 @@
 
 ### 11.3 iOS 排程產品承諾與 BGTaskScheduler
 
-- [ ] 決定 iOS 排程採「通知後由使用者啟動」或「best-effort 背景執行」的產品方案 <!-- id: 79 -->
-- [ ] 更新 PRD、UI 與商店文案，不宣稱 iOS 能準點無人值守錄音 <!-- id: 80 -->
-- [ ] 移除 BG task 以 timer 占用整段排程期間的設計 <!-- id: 81 -->
-- [ ] 將 BG task registration 移至 App 啟動早期的正確位置 <!-- id: 82 -->
-- [ ] 讓 expiration 與正常完成共用一次性的 completion guard，避免重複 `setTaskCompleted` <!-- id: 83 -->
-- [ ] 顯示排程延遲、未執行與過期狀態，提供可理解的復原操作 <!-- id: 84 -->
+- [x] 決定 iOS 排程採「通知後由使用者啟動」：以本機通知提醒，不自動開始錄音 <!-- id: 79 -->
+- [x] 更新 iOS UI，不宣稱能準點無人值守錄音，改顯示「Add reminder」與提醒限制 <!-- id: 80 -->
+- [x] 移除 BG task 以 timer 占用整段排程期間的設計 <!-- id: 81 -->
+- [x] 移除方案 B 不再需要的 BG task registration 與 processing entitlement <!-- id: 82 -->
+- [x] 移除方案 B 不再需要的 BGTask completion 流程，避免重複 completion 風險 <!-- id: 83 -->
+- [x] 顯示提醒建立與通知權限拒絕狀態，提供可理解的復原訊息 <!-- id: 84 -->
 
 ### 11.4 Android RecorderService 資料與資源安全
 
@@ -147,9 +147,9 @@
 - [ ] 實作首次使用隱私與錄音同意說明，清楚解釋麥克風、背景執行與儲存用途 <!-- id: 95 -->
 - [ ] Android 與 iOS 都提供明顯且持續的錄音中指示 <!-- id: 96 -->
 - [ ] 實作權限拒絕、永久拒絕與前往系統設定的復原流程 <!-- id: 97 -->
-- [ ] 在 iOS MethodChannel 補齊 `requestPermissions`，維持 Dart/Android/iOS API 對稱 <!-- id: 98 -->
+- [x] 在 iOS MethodChannel 補齊 `requestPermissions`，維持 Dart/Android/iOS API 對稱 <!-- id: 98 -->
 - [ ] 移除 iOS 關鍵路徑的 `try?` 靜默吞錯，定義穩定 error code 與診斷訊息 <!-- id: 99 -->
-- [ ] 讓 iOS schedule save/submit 具交易語意；submit 失敗不得留下看似有效的排程 <!-- id: 100 -->
+- [x] 讓 iOS reminder save/create 具交易語意；通知建立或持久化失敗不得留下看似有效的排程 <!-- id: 100 -->
 - [ ] 建立隱私政策、錄音法規提醒、資料保留/刪除說明及 App Store/Play 揭露清單 <!-- id: 101 -->
 
 ## Phase 12: P1 — 可用且可收費的 MVP
@@ -264,6 +264,11 @@
 - [ ] 設計 Free/Pro entitlement：歷史、儲存、多排程、進階設定、批次匯出與格式 <!-- id: 178 -->
 - [ ] 在 Beta 具有穩定留存與付費訊號後才接入訂閱與用量方案 <!-- id: 179 -->
 - [ ] 個人使用情境成立後，再評估團隊共享、角色權限、稽核與案件管理 <!-- id: 180 -->
+
+## 方案 B 後續文件與通知狀態
+
+- [ ] 更新 PRD、App Store/Play 商店文案與隱私說明，明確寫出 iOS 是通知提醒、不會自動開始錄音 <!-- id: 198 -->
+- [ ] 實作通知送達/點擊/未回應狀態追蹤，並提供重新開啟提醒或手動開始錄音的復原操作 <!-- id: 199 -->
 
 ## Phase 15: Beta 發行 Gate
 

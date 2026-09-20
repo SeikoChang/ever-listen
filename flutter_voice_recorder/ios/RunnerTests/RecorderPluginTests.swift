@@ -1,23 +1,6 @@
 @testable import Runner
 import XCTest
 
-// MARK: - Test Helpers
-
-final class CapturedResult: FlutterResult {
-  var called = false
-  var value: Any?
-  var error: FlutterError?
-
-  func _result(_ result: Any?) {
-    called = true
-    if let err = result as? FlutterError {
-      self.error = err
-    } else {
-      self.value = result
-    }
-  }
-}
-
 // MARK: - Schedule CRUD Tests (TODO #64)
 
 final class RecorderPluginScheduleTests: XCTestCase {
@@ -82,6 +65,44 @@ final class RecorderPluginScheduleTests: XCTestCase {
     let loaded = plugin.loadSchedules()
     XCTAssertEqual(loaded.count, 1)
     XCTAssertEqual(loaded[0]["id"] as? String, "new")
+  }
+
+  func testOnceReminderUsesScheduledCalendarDate() {
+    let trigger = plugin.reminderTrigger(for: [
+      "startTimeMillis": Int64(1_735_718_400_000), // 2025-01-01 08:00:00 UTC
+      "repeat": "once",
+      "timezone": "UTC"
+    ])
+
+    XCTAssertNotNil(trigger)
+    XCTAssertFalse(trigger!.repeats)
+    XCTAssertEqual(trigger!.dateComponents.year, 2025)
+    XCTAssertEqual(trigger!.dateComponents.hour, 8)
+  }
+
+  func testDailyReminderUsesTimeOnlyCalendarTrigger() {
+    let trigger = plugin.reminderTrigger(for: [
+      "startTimeMillis": Int64(1_735_718_400_000),
+      "repeat": "daily",
+      "timezone": "UTC"
+    ])
+
+    XCTAssertNotNil(trigger)
+    XCTAssertTrue(trigger!.repeats)
+    XCTAssertNil(trigger!.dateComponents.year)
+    XCTAssertEqual(trigger!.dateComponents.hour, 8)
+  }
+
+  func testWeeklyReminderIncludesWeekday() {
+    let trigger = plugin.reminderTrigger(for: [
+      "startTimeMillis": Int64(1_735_718_400_000),
+      "repeat": "weekly",
+      "timezone": "UTC"
+    ])
+
+    XCTAssertNotNil(trigger)
+    XCTAssertTrue(trigger!.repeats)
+    XCTAssertNotNil(trigger!.dateComponents.weekday)
   }
 
   // TODO #65: Schedule normalization (once/daily/weekly)

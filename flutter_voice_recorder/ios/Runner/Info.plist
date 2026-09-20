@@ -29,11 +29,6 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
-		<string>processing</string>
-	</array>
-	<key>BGTaskSchedulerPermittedIdentifiers</key>
-	<array>
-		<string>com.seikochang.everlisten.recording</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>

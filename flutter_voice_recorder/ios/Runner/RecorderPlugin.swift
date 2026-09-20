@@ -1,25 +1,21 @@
 import AVFoundation
-import BackgroundTasks
 import Flutter
 import Foundation
+import UserNotifications
 
 public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   private static let channelName = "ever_listen/recorder"
   private static let eventChannelName = "ever_listen/events"
   private static let schedulesKey = "ever_listen.schedules"
-  private static let backgroundTaskIdentifier = "com.seikochang.everlisten.recording"
-  private static var didRegisterBackgroundTask = false
+  private static let reminderIdentifierPrefix = "com.seikochang.everlisten.recording-reminder."
 
   private var eventSink: FlutterEventSink?
   private var recorder: AudioEngineRecorder?
   private var sensitivity = 0.6
   private var maxStorageMb = 200
-  private var scheduledStopWork: DispatchWorkItem?
 
   override init() {
     super.init()
-    registerBackgroundTask()
-    try? submitNextBackgroundTask()
   }
 
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -125,30 +121,56 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
   }
 
   private func requestPermissions(result: @escaping FlutterResult) {
-    let session = AVAudioSession.sharedInstance()
-    switch session.recordPermission {
-    case .granted:
-      result(["microphone": true, "notifications": true])
-    case .denied:
-      result(["microphone": false, "notifications": true])
-    case .undetermined:
-      session.requestRecordPermission { granted in
+    requestMicrophonePermission { [weak self] microphoneGranted in
+      self?.requestNotificationPermission { notificationsGranted in
         DispatchQueue.main.async {
-          // iOS does not require notification permission to show the recording
-          // indicator, so `notifications` is reported as not-applicable/granted.
-          result(["microphone": granted, "notifications": true])
+          result([
+            "microphone": microphoneGranted,
+            "notifications": notificationsGranted
+          ])
         }
       }
-    @unknown default:
-      result(FlutterError(
-        code: "PERMISSION_STATUS_UNKNOWN",
-        message: "Unable to determine microphone permission status",
-        details: nil
-      ))
     }
   }
 
-  private func scheduleRecording(arguments: [String: Any], result: FlutterResult) {
+  private func requestMicrophonePermission(completion: @escaping (Bool) -> Void) {
+    let session = AVAudioSession.sharedInstance()
+    switch session.recordPermission {
+    case .granted:
+      completion(true)
+    case .denied:
+      completion(false)
+    case .undetermined:
+      session.requestRecordPermission { granted in
+        completion(granted)
+      }
+    @unknown default:
+      completion(false)
+    }
+  }
+
+  private func requestNotificationPermission(completion: @escaping (Bool) -> Void) {
+    let center = UNUserNotificationCenter.current()
+    center.getNotificationSettings { settings in
+      switch settings.authorizationStatus {
+      case .authorized, .provisional, .ephemeral:
+        completion(true)
+      case .denied:
+        completion(false)
+      case .notDetermined:
+        center.requestAuthorization(options: [.alert, .sound]) { granted, error in
+          if let error {
+            self.sendEvent("error", ["message": "Unable to request notification permission: \(error.localizedDescription)"])
+          }
+          completion(granted)
+        }
+      @unknown default:
+        completion(false)
+      }
+    }
+  }
+
+  private func scheduleRecording(arguments: [String: Any], result: @escaping FlutterResult) {
     guard let start = number(arguments["startTimeMillis"]),
           let end = number(arguments["endTimeMillis"]),
           end > start,
@@ -163,7 +185,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     }
 
     let previousSchedules = loadSchedules()
-    var schedule: [String: Any] = [
+    let schedule: [String: Any] = [
       "id": (arguments["id"] as? String) ?? UUID().uuidString,
       "startTimeMillis": Int64(start),
       "endTimeMillis": Int64(end),
@@ -173,21 +195,39 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
       "sensitivity": min(max(number(arguments["sensitivity"]) ?? sensitivity, 0), 1),
       "maxStorageMb": max(Int(number(arguments["maxStorageMb"]) ?? Double(maxStorageMb)), 1)
     ]
-    var schedules = previousSchedules
-    schedules.removeAll { ($0["id"] as? String) == (schedule["id"] as? String) }
-    schedules.append(schedule)
-    saveSchedules(schedules)
-    do {
-      try submitNextBackgroundTask()
-      result(schedule)
-    } catch {
-      // `submitNextBackgroundTask()` normalizes persisted schedules before it
-      // submits the BG request, so persist first then restore the previous
-      // state if submission fails. This prevents a failed request from being
-      // displayed as a valid schedule in Flutter.
-      saveSchedules(previousSchedules)
-      try? submitNextBackgroundTask()
-      result(FlutterError(code: "SCHEDULE_FAILED", message: error.localizedDescription, details: nil))
+    requestNotificationPermission { [weak self] notificationsGranted in
+      DispatchQueue.main.async {
+        guard let self else { return }
+        guard notificationsGranted else {
+          result(FlutterError(
+            code: "NOTIFICATION_PERMISSION_DENIED",
+            message: "Notification permission is required for iOS recording reminders",
+            details: nil
+          ))
+          return
+        }
+        self.scheduleReminder(for: schedule) { error in
+          DispatchQueue.main.async {
+            if let error {
+              result(FlutterError(code: "SCHEDULE_FAILED", message: error.localizedDescription, details: nil))
+              return
+            }
+            var schedules = previousSchedules
+            schedules.removeAll { ($0["id"] as? String) == (schedule["id"] as? String) }
+            schedules.append(schedule)
+            guard self.saveSchedules(schedules) else {
+              self.removeReminder(for: schedule)
+              result(FlutterError(code: "SCHEDULE_PERSIST_FAILED", message: "Unable to save schedule", details: nil))
+              return
+            }
+            self.sendEvent("recordingReminderScheduled", [
+              "id": schedule["id"] as? String ?? "",
+              "startTimeMillis": schedule["startTimeMillis"] as? Int64 ?? 0
+            ])
+            result(schedule)
+          }
+        }
+      }
     }
   }
 
@@ -199,8 +239,11 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     var schedules = loadSchedules()
     let originalCount = schedules.count
     schedules.removeAll { ($0["id"] as? String) == id }
-    saveSchedules(schedules)
-    try? submitNextBackgroundTask()
+    guard saveSchedules(schedules) else {
+      result(FlutterError(code: "SCHEDULE_PERSIST_FAILED", message: "Unable to cancel schedule", details: nil))
+      return
+    }
+    removeReminder(forID: id)
     result(["cancelled": schedules.count != originalCount, "id": id])
   }
 
@@ -229,124 +272,81 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     return decoded
   }
 
-  func saveSchedules(_ schedules: [[String: Any]]) {
-    if let data = try? JSONSerialization.data(withJSONObject: schedules) {
-      UserDefaults.standard.set(data, forKey: Self.schedulesKey)
-    }
-  }
-
-  private func registerBackgroundTask() {
-    guard !Self.didRegisterBackgroundTask else { return }
-    Self.didRegisterBackgroundTask = true
-    BGTaskScheduler.shared.register(
-      forTaskWithIdentifier: Self.backgroundTaskIdentifier,
-      using: nil
-    ) { [weak self] task in
-      guard let task = task as? BGProcessingTask else {
-        task.setTaskCompleted(success: false)
-        return
-      }
-      self?.handleBackgroundTask(task)
-    }
-  }
-
-  private func submitNextBackgroundTask() throws {
-    let now = Date().timeIntervalSince1970 * 1000
-    let schedules = normalizedSchedules(now: now)
-    saveSchedules(schedules)
-    let nextStart = schedules
-      .compactMap { number($0["startTimeMillis"]) }
-      .filter { $0 > now }
-      .min()
-    guard let nextStart else {
-      BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.backgroundTaskIdentifier)
-      return
-    }
-
-    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.backgroundTaskIdentifier)
-    let request = BGProcessingTaskRequest(identifier: Self.backgroundTaskIdentifier)
-    request.earliestBeginDate = Date(timeIntervalSince1970: nextStart / 1000)
-    request.requiresNetworkConnectivity = false
-    request.requiresExternalPower = false
-    try BGTaskScheduler.shared.submit(request)
-  }
-
-  private func handleBackgroundTask(_ task: BGProcessingTask) {
-    task.expirationHandler = { [weak self] in
-      self?.scheduledStopWork?.cancel()
-      self?.recorder?.stop()
-      self?.recorder = nil
-      task.setTaskCompleted(success: false)
-    }
-
-    let now = Date().timeIntervalSince1970 * 1000
-    var schedules = normalizedSchedules(now: now)
-    var activeSchedule: [String: Any]?
-
-    for schedule in schedules {
-      guard let start = number(schedule["startTimeMillis"]),
-            let end = number(schedule["endTimeMillis"]),
-            let repeatValue = schedule["repeat"] as? String else { continue }
-
-      if start <= now && end > now {
-        activeSchedule = schedule
-        break
-      }
-      if end <= now {
-        if repeatValue == "once" {
-          schedules.removeAll { ($0["id"] as? String) == (schedule["id"] as? String) }
-        } else {
-          var next = schedule
-          let interval = repeatValue == "weekly" ? 7.0 * 24 * 60 * 60 * 1000 : 24.0 * 60 * 60 * 1000
-          next["startTimeMillis"] = Int64(start + interval)
-          next["endTimeMillis"] = Int64(end + interval)
-          if let id = schedule["id"] as? String {
-            schedules.removeAll { ($0["id"] as? String) == id }
-          }
-          schedules.append(next)
-        }
-      }
-    }
-    saveSchedules(schedules)
-
-    guard let schedule = activeSchedule else {
-      try? submitNextBackgroundTask()
-      task.setTaskCompleted(success: true)
-      return
-    }
-
-    let mode = (schedule["mode"] as? String) ?? "schedule"
-    let scheduleSensitivity = number(schedule["sensitivity"]) ?? sensitivity
-    let scheduleStorage = max(Int(number(schedule["maxStorageMb"]) ?? Double(maxStorageMb)), 1)
+  @discardableResult
+  func saveSchedules(_ schedules: [[String: Any]]) -> Bool {
     do {
-      let audioRecorder = try AudioEngineRecorder(
-        mode: mode,
-        sensitivity: scheduleSensitivity,
-        maxStorageMb: scheduleStorage,
-        eventSink: eventSink
-      )
-      try audioRecorder.start()
-      recorder = audioRecorder
-      sendEvent("scheduleStarted", ["mode": mode])
-
-      let remaining = max((number(schedule["endTimeMillis"]) ?? now) - now, 0) / 1000
-      let work = DispatchWorkItem { [weak self] in
-        audioRecorder.stop()
-        self?.recorder = nil
-        self?.sendEvent("scheduleEnded", ["mode": mode])
-        if let self {
-          self.saveSchedules(self.normalizedSchedules(now: Date().timeIntervalSince1970 * 1000))
-        }
-        try? self?.submitNextBackgroundTask()
-        task.setTaskCompleted(success: true)
-      }
-      scheduledStopWork = work
-      DispatchQueue.global().asyncAfter(deadline: .now() + remaining, execute: work)
+      let data = try JSONSerialization.data(withJSONObject: schedules)
+      UserDefaults.standard.set(data, forKey: Self.schedulesKey)
+      return true
     } catch {
-      sendEvent("error", ["message": error.localizedDescription])
-      try? submitNextBackgroundTask()
-      task.setTaskCompleted(success: false)
+      sendEvent("error", ["message": "Unable to persist schedules: \(error.localizedDescription)"])
+      return false
     }
+  }
+
+  private func scheduleReminder(for schedule: [String: Any], completion: @escaping (Error?) -> Void) {
+    guard let id = schedule["id"] as? String,
+          let trigger = reminderTrigger(for: schedule) else {
+      completion(NSError(
+        domain: "EverListen.RecorderPlugin",
+        code: 2,
+        userInfo: [NSLocalizedDescriptionKey: "Schedule does not contain a valid reminder time"]
+      ))
+      return
+    }
+
+    let content = UNMutableNotificationContent()
+    content.title = "Ever Listen recording reminder"
+    content.body = "It is time to start your scheduled recording."
+    content.sound = .default
+    content.userInfo = ["scheduleId": id, "kind": "recordingReminder"]
+
+    let request = UNNotificationRequest(
+      identifier: reminderIdentifier(forID: id),
+      content: content,
+      trigger: trigger
+    )
+    UNUserNotificationCenter.current().add(request, withCompletionHandler: completion)
+  }
+
+  func reminderTrigger(for schedule: [String: Any]) -> UNCalendarNotificationTrigger? {
+    guard let startMillis = number(schedule["startTimeMillis"]) else { return nil }
+    let timezone = (schedule["timezone"] as? String).flatMap(TimeZone.init(identifier:)) ?? .current
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = timezone
+    let startDate = Date(timeIntervalSince1970: startMillis / 1000)
+    let repeatValue = (schedule["repeat"] as? String) ?? "once"
+
+    var components: DateComponents
+    switch repeatValue {
+    case "daily":
+      components = calendar.dateComponents([.hour, .minute, .second], from: startDate)
+    case "weekly":
+      components = calendar.dateComponents([.weekday, .hour, .minute, .second], from: startDate)
+    case "once":
+      components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: startDate)
+    default:
+      return nil
+    }
+    components.calendar = calendar
+    components.timeZone = timezone
+    return UNCalendarNotificationTrigger(dateMatching: components, repeats: repeatValue != "once")
+  }
+
+  private func reminderIdentifier(forID id: String) -> String {
+    Self.reminderIdentifierPrefix + id
+  }
+
+  private func removeReminder(for schedule: [String: Any]) {
+    guard let id = schedule["id"] as? String else { return }
+    removeReminder(forID: id)
+  }
+
+  private func removeReminder(forID id: String) {
+    let identifier = reminderIdentifier(forID: id)
+    let center = UNUserNotificationCenter.current()
+    center.removePendingNotificationRequests(withIdentifiers: [identifier])
+    center.removeDeliveredNotifications(withIdentifiers: [identifier])
   }
 
   private func sendEvent(_ type: String, _ data: [String: Any]) {
@@ -466,7 +466,7 @@ private final class AudioEngineRecorder {
     input.removeTap(onBus: 0)
     engine.stop()
     closeFile(emitReady: true)
-    try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    deactivateAudioSession()
     emit("recordingStopped", [:])
   }
 
@@ -492,7 +492,8 @@ private final class AudioEngineRecorder {
       catch { emit("error", ["message": error.localizedDescription]) }
     } else if speechActive {
       silenceFrames += 1
-      try? outputFile?.write(from: buffer)
+      do { try outputFile?.write(from: buffer) }
+      catch { emit("error", ["message": error.localizedDescription]) }
       if silenceFrames >= 17 {
         speechActive = false
         emit("speechEnded", ["frame": frameCount])
@@ -578,6 +579,14 @@ private final class AudioEngineRecorder {
     currentFilePath = url.path
   }
 
+  private func deactivateAudioSession() {
+    do {
+      try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    } catch {
+      emit("error", ["message": "Unable to deactivate audio session: \(error.localizedDescription)"])
+    }
+  }
+
   private func closeFile(emitReady: Bool) {
     guard outputFile != nil else { return }
     outputFile = nil
@@ -606,9 +615,13 @@ private final class AudioEngineRecorder {
     }
     for url in sorted where total > limit && url.path != currentFilePath {
       let size = Double((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
-      try? FileManager.default.removeItem(at: url)
-      total -= size
-      emit("storagePruned", ["filePath": url.path])
+      do {
+        try FileManager.default.removeItem(at: url)
+        total -= size
+        emit("storagePruned", ["filePath": url.path])
+      } catch {
+        emit("error", ["message": "Unable to delete recording \(url.lastPathComponent): \(error.localizedDescription)"])
+      }
     }
   }
 

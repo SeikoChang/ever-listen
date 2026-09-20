@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'src/recorder_plugin.dart';
 
@@ -122,6 +124,16 @@ class _RecorderHomeState extends State<RecorderHome> {
       return;
     }
 
+    if (Platform.isIOS) {
+      final permissions = await _recorder.requestPermissions();
+      if (permissions['notifications'] != true) {
+        setState(() {
+          _status = 'Notifications are required for iOS recording reminders';
+        });
+        return;
+      }
+    }
+
     await _recorder.scheduleRecording(
       startTime: _scheduleStart,
       endTime: _scheduleEnd,
@@ -132,7 +144,9 @@ class _RecorderHomeState extends State<RecorderHome> {
       maxStorageMb: _maxStorageMb,
     );
     setState(() {
-      _status = 'schedule created';
+      _status = Platform.isIOS
+          ? 'recording reminder created'
+          : 'schedule created';
     });
     await _refreshSchedules();
   }
@@ -194,6 +208,13 @@ class _RecorderHomeState extends State<RecorderHome> {
             Text('Status: $_status'),
             const SizedBox(height: 20),
             if (_mode == 'schedule') ...[
+              if (Platform.isIOS) ...[
+                const Text(
+                  'On iPhone, a notification reminds you to start recording. '
+                  'The reminder does not start recording automatically.',
+                ),
+                const SizedBox(height: 12),
+              ],
               _ScheduleTimeRow(
                 label: 'Start',
                 value: _scheduleStart,
@@ -224,7 +245,7 @@ class _RecorderHomeState extends State<RecorderHome> {
                   const Spacer(),
                   ElevatedButton(
                     onPressed: _createSchedule,
-                    child: const Text('Add'),
+                    child: Text(Platform.isIOS ? 'Add reminder' : 'Add'),
                   ),
                 ],
               ),
@@ -243,7 +264,9 @@ class _RecorderHomeState extends State<RecorderHome> {
                       contentPadding: EdgeInsets.zero,
                       title: Text(
                           '${schedule['repeat']}  ${_formatDateTime(start)}'),
-                      subtitle: Text('Ends ${_formatDateTime(end)}'),
+                      subtitle: Text(Platform.isIOS
+                          ? 'Reminder only — recording starts when you choose it'
+                          : 'Ends ${_formatDateTime(end)}'),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline),
                         tooltip: 'Delete schedule',

@@ -14,7 +14,7 @@
 
 ### 建議產品方向
 
-短期建議採用 **Android-first、local-first、privacy-first 的「語音觸發錄音器」**：先讓 Android 版達到可信賴的技術 Beta；iOS 第一版只承諾使用者明確啟動後的錄音與背景延續，排程則標示為「系統允許時執行」或暫不提供。等核心可靠度、留存與付費意願成立後，再投資雲端同步、轉錄與搜尋。
+短期採用 **Android-first、local-first、privacy-first 的「語音觸發錄音器」**：先讓 Android 版達到可信賴的技術 Beta；iOS 第一版只承諾使用者明確啟動後的錄音與背景延續。iOS 排程已定案為「本機通知提醒使用者開始錄音」，不會自動啟動錄音。等核心可靠度、留存與付費意願成立後，再投資雲端同步、轉錄與搜尋。
 
 ## 2. 評估方式
 
@@ -149,7 +149,7 @@
 | 第 1 週 | 建置真相與阻斷修復 | iOS target 接線、完整 Xcode build/test；Android cleanup 與 pre-roll 修復；CI 開始跑 tests |
 | 第 2 週 | 音訊正確性 | iOS 16 kHz converter；兩平台固定音檔 VAD 測試；crash-safe 分段寫檔 |
 | 第 3–4 週 | MVP 產品閉環 | 錄音索引、清單、播放、分享、刪除；權限與錯誤 UX；狀態持久化 |
-| 第 5 週 | 排程可靠度 | timezone/DST、衝突、重開機、權限狀態；iOS 改為 best-effort/提醒模式 |
+| 第 5 週 | 排程可靠度 | timezone/DST、衝突、重開機、權限狀態；iOS 採通知提醒模式並驗證通知權限/送達/使用者未回應狀態 |
 | 第 6 週 | 隱私與發行 | privacy flow、資料保護、release signing、商店素材與政策檢查 |
 | 第 7 週 | 長時間與 OEM 測試 | 8/24 小時錄音、低容量、Doze、來電/耳機/route change、崩潰復原 |
 | 第 8 週 | 封閉 Beta | 20–50 位目標使用者、問題分級、核心指標與 go/no-go 決策 |
