@@ -104,9 +104,9 @@
 
 ### 11.1 iOS 建置真相與 target 接線
 
-- [ ] 將 `ios/Runner/RecorderPlugin.swift` 加入 Runner target 的 Compile Sources <!-- id: 67 -->
-- [ ] 將 `ios/RunnerTests/RecorderPluginTests.swift` 加入 RunnerTests target 的 Compile Sources <!-- id: 68 -->
-- [ ] 檢查 bridging header、`vad_wrapper.c`、`webrtc_vad.c` 與 Swift/C symbols 的 target membership <!-- id: 69 -->
+- [x] 將 `ios/Runner/RecorderPlugin.swift` 加入 Runner target 的 Compile Sources <!-- id: 67 -->
+- [x] 將 `ios/RunnerTests/RecorderPluginTests.swift` 加入 RunnerTests target 的 Compile Sources <!-- id: 68 -->
+- [x] 檢查 bridging header、`vad_wrapper.c`、`webrtc_vad.c` 與 Swift/C symbols 的 target membership <!-- id: 69 -->
 - [ ] 安裝並選取完整 Xcode Developer Directory，接受 license 並安裝可用的 iOS Simulator runtime <!-- id: 70 -->
 - [ ] 執行 RunnerTests，確認既有 iOS 測試確實被發現且通過 <!-- id: 71 -->
 - [ ] 執行 `flutter build ios --simulator --no-codesign` 並修復所有編譯、連結與 entitlement 問題 <!-- id: 72 -->

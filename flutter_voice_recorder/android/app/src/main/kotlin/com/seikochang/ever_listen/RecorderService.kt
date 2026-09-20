@@ -53,6 +53,8 @@ class RecorderService : Service() {
     private var outputFileWriter: AudioFileWriter? = null
     @VisibleForTesting var scheduledSession = false
     private var wakeLock: PowerManager.WakeLock? = null
+    private val lifecycleLock = Any()
+    @Volatile private var isShuttingDown = false
     
     private val handler = Handler(Looper.getMainLooper())
     private val TAG = "RecorderService"
@@ -177,6 +179,7 @@ class RecorderService : Service() {
         frameBuffer?.clear()
         currentOutputFile = null
         statusCurrentFilePath = ""
+        isShuttingDown = false
         statusRunning = true
         statusMode = mode
         statusSensitivity = sensitivity
@@ -212,10 +215,7 @@ class RecorderService : Service() {
             
             if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
                 Log.e(TAG, "AudioRecord initialization failed")
-                statusRunning = false
-                outputFileWriter = null
-            stopForeground(true)
-            releaseWakeLock()
+                cleanupRecording(emitStoppedEvent = false)
             emitEvent("error", mapOf("message" to "AudioRecord initialization failed"))
                 return
             }
@@ -234,15 +234,7 @@ class RecorderService : Service() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start recording", e)
-            statusRunning = false
-            try {
-                audioRecord?.release()
-            } catch (_: Exception) {
-            }
-            audioRecord = null
-            outputFileWriter = null
-            stopForeground(true)
-            releaseWakeLock()
+            cleanupRecording(emitStoppedEvent = false)
             emitEvent("error", mapOf("message" to e.message))
         }
     }
@@ -270,8 +262,9 @@ class RecorderService : Service() {
                 }
                 
                 frameCount++
-                
-                // Add frame to pre-roll buffer
+
+                // Add the frame before VAD evaluation so the triggering speech
+                // frame is flushed with pre-roll exactly once.
                 this.frameBuffer?.addFrame(frameBuffer.copyOf())
                 
                 if (mode == "monitor" || mode == "schedule") {
@@ -314,10 +307,9 @@ class RecorderService : Service() {
                         this.frameBuffer?.getFrames()?.forEach { frame ->
                             outputFileWriter?.writeFrame(frame)
                         }
+                    } else {
+                        outputFileWriter?.writeFrame(frameBuffer)
                     }
-                    
-                    // Write current frame to file
-                    outputFileWriter?.writeFrame(frameBuffer)
                 } else {
                     if (speechActive) {
                         silenceFrameCount++
@@ -349,54 +341,101 @@ class RecorderService : Service() {
             Log.e(TAG, "Error in audio capture loop", e)
             emitEvent("error", mapOf("message" to e.message))
         } finally {
-            if (mode == "monitor" || mode == "schedule") {
-                rotateCurrentFile()
-                enforceStorageLimit()
-            }
+            cleanupRecording(emitStoppedEvent = true)
             Log.d(TAG, "Audio capture loop ended after $frameCount frames")
         }
     }
 
     @VisibleForTesting internal fun stopRecording() {
-        if (!isRecording) {
-            Log.w(TAG, "Recording not in progress")
-            return
-        }
-        
         Log.d(TAG, "Stopping recording")
-        isRecording = false
-        
-        try {
-            // Stop audio capture
-            audioRecord?.stop()
-            audioRecord?.release()
+        cleanupRecording(emitStoppedEvent = true)
+    }
+
+    /**
+     * Finalizes a recording from every exit path. This method is deliberately
+     * idempotent because a stop command, an AudioRecord failure and onDestroy
+     * can race with the capture thread.
+     */
+    private fun cleanupRecording(emitStoppedEvent: Boolean) {
+        var record: AudioRecord? = null
+        var captureThread: Thread? = null
+        var hadActiveRecording = false
+        var wasScheduled = false
+
+        synchronized(lifecycleLock) {
+            if (isShuttingDown) return
+            hadActiveRecording = isRecording || audioRecord != null || outputFileWriter != null || statusRunning
+            if (!hadActiveRecording) {
+                stopSelf()
+                return
+            }
+            isShuttingDown = true
+            isRecording = false
+            record = audioRecord
             audioRecord = null
-            
-            // Wait for recording thread to finish
-            recordingThread?.join(5000)  // timeout 5 seconds
+            captureThread = recordingThread
             recordingThread = null
-            
-            // Finalize any open output file and notify Flutter.
-            rotateCurrentFile()
+            wasScheduled = scheduledSession
+            scheduledSession = false
+        }
+
+        try {
+            try {
+                record?.stop()
+            } catch (e: Exception) {
+                Log.w(TAG, "AudioRecord stop failed during cleanup", e)
+            }
+            try {
+                record?.release()
+            } catch (e: Exception) {
+                Log.w(TAG, "AudioRecord release failed during cleanup", e)
+            }
+
+            if (captureThread != null && captureThread !== Thread.currentThread()) {
+                try {
+                    captureThread.join(5000)
+                } catch (e: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    Log.w(TAG, "Interrupted while waiting for audio capture thread", e)
+                }
+            }
+
+            try {
+                rotateCurrentFile()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to finalize recording file", e)
+                emitEvent("error", mapOf("message" to e.message))
+            }
             outputFileWriter = null
             currentOutputFile = null
             statusCurrentFilePath = ""
             statusRunning = false
-            enforceStorageLimit()
-            
-            // Stop foreground notification
-            stopForeground(true)
+
+            try {
+                enforceStorageLimit()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to enforce recording storage limit", e)
+                emitEvent("error", mapOf("message" to e.message))
+            }
+
+            try {
+                stopForeground(true)
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to stop foreground service", e)
+            }
             releaseWakeLock()
-            
-            emitEvent("recordingStopped", mapOf())
-            if (scheduledSession) {
-                emitEvent("scheduleEnded", mapOf("mode" to mode))
-                scheduledSession = false
+
+            if (emitStoppedEvent) {
+                emitEvent("recordingStopped", mapOf())
+                if (wasScheduled) {
+                    emitEvent("scheduleEnded", mapOf("mode" to mode))
+                }
+            }
+        } finally {
+            synchronized(lifecycleLock) {
+                isShuttingDown = false
             }
             stopSelf()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error stopping recording", e)
-            emitEvent("error", mapOf("message" to e.message))
         }
     }
 
@@ -478,14 +517,12 @@ class RecorderService : Service() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         Log.d(TAG, "Service destroyed")
-        if (isRecording) {
-            stopRecording()
-        }
+        cleanupRecording(emitStoppedEvent = false)
         (vadProcessor as? WebRTCVADProcessor)?.destroy()
         vadProcessor = null
         releaseWakeLock()
         statusRunning = false
+        super.onDestroy()
     }
 }

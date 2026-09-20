@@ -80,14 +80,19 @@ class RecorderServiceTest {
     // ==================== Lifecycle (TODO #53) ====================
 
     @Test
-    fun startRecording_initializesService() {
+    fun audioReadFailure_cleansUpServiceResources() {
         frameQueue.add(silenceFrame())
         service.startRecording()
         shadowOf(android.os.Looper.getMainLooper()).idle()
         waitLoop()
 
         val status = RecorderService.statusSnapshot(context)
-        assertTrue(status["running"] as Boolean)
+        assertFalse(status["running"] as Boolean)
+        verify(mockAudioRecord).release()
+        val types = capturedEvents.map { it["type"] }
+        assertTrue("Expected recordingStarted: $types", types.contains("recordingStarted"))
+        assertTrue("Expected error: $types", types.contains("error"))
+        assertTrue("Expected recordingStopped: $types", types.contains("recordingStopped"))
     }
 
     @Test
@@ -128,6 +133,18 @@ class RecorderServiceTest {
         assertTrue("Expected speechStarted: $types", types.contains("speechStarted"))
         assertTrue("Expected speechEnded: $types", types.contains("speechEnded"))
         assertTrue("Expected fileReady: $types", types.contains("fileReady"))
+    }
+
+    @Test
+    fun detectMode_writesTriggeringFrameExactlyOnce() {
+        enqueueDetectFrames()
+        service.startRecording()
+        shadowOf(android.os.Looper.getMainLooper()).idle()
+        waitLoop()
+
+        val dataBytes = recordingFiles().sumOf { it.length() - 44L }
+        // 10 pre-roll silence frames + 20 speech frames + 17 trailing silence frames.
+        assertEquals(47L * 960L, dataBytes)
     }
 
     // ==================== Monitor Mode (TODO #55) ====================
