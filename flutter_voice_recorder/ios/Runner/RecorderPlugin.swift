@@ -277,11 +277,23 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
   }
 
   func loadSchedules() -> [[String: Any]] {
-    guard let data = UserDefaults.standard.data(forKey: Self.schedulesKey),
-          let decoded = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+    guard let data = UserDefaults.standard.data(forKey: Self.schedulesKey) else {
       return []
     }
-    return decoded
+    do {
+      let object = try JSONSerialization.jsonObject(with: data)
+      guard let decoded = object as? [[String: Any]] else {
+        sendEvent("error", ["code": "SCHEDULE_DATA_INVALID", "message": "Stored schedules are not a list"])
+        return []
+      }
+      return decoded
+    } catch {
+      sendEvent("error", [
+        "code": "SCHEDULE_DATA_INVALID",
+        "message": "Unable to decode stored schedules: \(error.localizedDescription)",
+      ])
+      return []
+    }
   }
 
   @discardableResult
@@ -468,7 +480,14 @@ private final class AudioEngineRecorder {
       emit("recordingStarted", ["mode": mode])
     } catch {
       input.removeTap(onBus: 0)
-      try? session.setActive(false, options: .notifyOthersOnDeactivation)
+      do {
+        try session.setActive(false, options: .notifyOthersOnDeactivation)
+      } catch let cleanupError {
+        emit("error", [
+          "code": "AUDIO_SESSION_CLEANUP_FAILED",
+          "message": cleanupError.localizedDescription,
+        ])
+      }
       throw error
     }
   }
