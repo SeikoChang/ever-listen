@@ -143,6 +143,38 @@ class ScheduleStoreTest {
     }
 
     @Test
+    fun testJsonStoragePreservesDelimiterCharacters() {
+        val schedule = RecordingSchedule(
+            id = "json-schedule",
+            startTimeMillis = 5000L,
+            endTimeMillis = 10000L,
+            repeat = "once",
+            timezone = "Etc/GMT+8|legacy",
+            mode = "detect|monitor",
+            sensitivity = 0.8,
+            maxStorageMb = 300
+        )
+
+        ScheduleStore.add(context, schedule)
+
+        assertEquals(schedule, ScheduleStore.get(context, schedule.id))
+    }
+
+    @Test
+    fun testLegacyStorageIsReadAndMigratedToJson() {
+        val prefs = context.getSharedPreferences("ever_listen_schedules", Context.MODE_PRIVATE)
+        prefs.edit()
+            .putStringSet("schedule_ids", setOf("legacy"))
+            .putString("schedule_legacy", "1000|2000|once|UTC|detect|0.6|200|v1")
+            .apply()
+
+        val schedule = ScheduleStore.get(context, "legacy")
+
+        assertNotNull(schedule)
+        assertTrue(prefs.getString("schedule_legacy", "")!!.startsWith("{"))
+    }
+
+    @Test
     fun testRescheduleNextWeeklyPreservesConfiguration() {
         val schedule = RecordingSchedule(
             id = "weekly",
