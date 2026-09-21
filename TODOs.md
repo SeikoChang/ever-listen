@@ -211,7 +211,7 @@
 - [ ] CI 已加入 Android debug APK artifact；正式簽署 release AAB 待 keystore/CI secret 就緒 <!-- id: 142 -->
 - [ ] CI 已加入 macOS iOS simulator build/RunnerTests job，待 GitHub Actions 實際通過 <!-- id: 143 -->
 - [ ] 建立跨平台 MethodChannel contract tests 與核心 feature parity tests <!-- id: 144 -->
-- [ ] 產生並保存真實 coverage report，移除 AGENT/TODO 中的人工估計值 <!-- id: 145 -->
+- [ ] CI 已產生並保存 Flutter `lcov.info`；Android/iOS native coverage 與移除 AGENT 中歷史估計值仍待完成 <!-- id: 145 -->
 - [ ] 將所有 build/test gate 設為 pull request 必須通過的 checks <!-- id: 146 -->
 
 ## Phase 13: P2 — 品質、留存與維運

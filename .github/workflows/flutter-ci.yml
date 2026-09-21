@@ -17,7 +17,12 @@ jobs:
       - run: cd flutter_voice_recorder && flutter pub get
       - run: cd flutter_voice_recorder && dart format --output=none --set-exit-if-changed lib test
       - run: cd flutter_voice_recorder && flutter analyze
-      - run: cd flutter_voice_recorder && flutter test
+      - run: cd flutter_voice_recorder && flutter test --coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ever-listen-flutter-coverage
+          path: flutter_voice_recorder/coverage/lcov.info
+          if-no-files-found: error
 
   android-unit-test:
     runs-on: ubuntu-latest
