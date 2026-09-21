@@ -44,6 +44,7 @@ jobs:
           name: ever-listen-android-debug-apk
           path: flutter_voice_recorder/build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
+      - run: cd flutter_voice_recorder && flutter build appbundle --release
 
   ios-simulator-test:
     runs-on: macos-14

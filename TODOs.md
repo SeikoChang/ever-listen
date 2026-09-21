@@ -143,7 +143,7 @@
 
 - [x] Android release 已移除 debug signing 並支援 Gradle property 注入，待正式 keystore/CI secret 驗證 <!-- id: 92 -->
 - [ ] 由 CI secrets 或本機安全設定注入 Android release signing credentials（已文件化 Gradle properties 與 ignore 規則，待正式 CI secret/keystore） <!-- id: 93 -->
-- [ ] 建立可重現的 `flutter build appbundle --release` gate 與 artifact <!-- id: 94 -->
+- [ ] CI 已加入可重現的 `flutter build appbundle --release` compile gate；正式 signed artifact 待 keystore/CI secret <!-- id: 94 -->
 - [ ] 實作首次使用隱私與錄音同意說明，清楚解釋麥克風、背景執行與儲存用途 <!-- id: 95 -->
 - [x] Android 與 iOS 都提供明顯且持續的錄音中指示（Android foreground notification、iOS audio session/recording events 已實作，待實機驗證） <!-- id: 96 -->
 - [x] 實作權限拒絕、永久拒絕與前往系統設定的復原流程（已加入跨平台 `openAppSettings`、Flutter/Android MethodChannel tests，待 native/CI 驗證） <!-- id: 97 -->
