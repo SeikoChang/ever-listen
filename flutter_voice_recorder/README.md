@@ -1,17 +1,23 @@
-# flutter_voice_recorder
+# Ever Listen Flutter app
 
-A new Flutter project.
+This directory contains the Flutter UI and MethodChannel wrapper for Ever Listen's native recorder implementations.
 
-## Getting Started
+## Run locally
 
-This project is a starting point for a Flutter application.
+```sh
+flutter pub get
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze
+flutter test
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
+The Flutter layer exposes recording, permissions, schedule CRUD, status, native events, and an app-settings recovery action through `lib/src/recorder_plugin.dart`.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Platform behavior
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Android starts a foreground microphone service and restores schedules after reboot.
+- iOS uses a local notification reminder for schedules. The notification does not start recording automatically; the user must start recording manually.
+- Native platform builds and hardware behavior are validated separately from these Flutter tests.
+
+See the repository [build matrix](../docs/BUILD_MATRIX.md), [task backlog](../TODOs.md), and [manual test plan](../docs/manual_testing_zh.md).

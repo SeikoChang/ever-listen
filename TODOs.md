@@ -242,7 +242,7 @@
 - [x] 移除 `android.builtInKotlin=false`、`android.newDsl=false` 與 AGP 9 不需要的 Kotlin Android plugin（待 Gradle CI 驗證） <!-- id: 162 -->
 - [ ] 鎖定並文件化 JDK、Flutter、Dart、AGP、Gradle、Kotlin、NDK 與 Xcode 版本（Flutter CI 已更新至 `3.41.4`；NDK/Xcode 仍待 CI/clean runner 最終確認） <!-- id: 163 -->
 - [ ] 在乾淨環境重新建置 Android native artifacts，排除 NDK/CMake 警告 <!-- id: 164 -->
-- [ ] 重寫根目錄與 Flutter README：產品目的、架構、建置、測試、限制及隱私 <!-- id: 165 -->
+- [x] 重寫根目錄與 Flutter README：產品目的、架構、建置、測試、限制及隱私（產品/法律細節仍由 ID 101、187 追蹤） <!-- id: 165 -->
 - [ ] 更新 `AGENT.md`、`TODOs.md` 與實際 build/test 狀態，建立每次 release 的文件檢查 <!-- id: 166 -->
 - [x] 清理或移出 `result.txt`、`result_short.txt`、`docs/tmp*` 等暫存/產出物並補 `.gitignore` <!-- id: 167 -->
 
