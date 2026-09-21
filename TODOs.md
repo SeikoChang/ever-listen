@@ -145,7 +145,7 @@
 - [ ] 由 CI secrets 或本機安全設定注入 Android release signing credentials（已文件化 Gradle properties 與 ignore 規則，待正式 CI secret/keystore） <!-- id: 93 -->
 - [ ] 建立可重現的 `flutter build appbundle --release` gate 與 artifact <!-- id: 94 -->
 - [ ] 實作首次使用隱私與錄音同意說明，清楚解釋麥克風、背景執行與儲存用途 <!-- id: 95 -->
-- [ ] Android 與 iOS 都提供明顯且持續的錄音中指示 <!-- id: 96 -->
+- [x] Android 與 iOS 都提供明顯且持續的錄音中指示（Android foreground notification、iOS audio session/recording events 已實作，待實機驗證） <!-- id: 96 -->
 - [x] 實作權限拒絕、永久拒絕與前往系統設定的復原流程（已加入跨平台 `openAppSettings`、Flutter/Android MethodChannel tests，待 native/CI 驗證） <!-- id: 97 -->
 - [x] 在 iOS MethodChannel 補齊 `requestPermissions`，維持 Dart/Android/iOS API 對稱 <!-- id: 98 -->
 - [x] 移除 iOS 關鍵路徑的 `try?` 靜默吞錯，定義穩定 error code 與診斷訊息（已處理 schedule decode 與 audio session cleanup，待完整 Xcode typecheck） <!-- id: 99 -->

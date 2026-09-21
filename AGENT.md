@@ -8,7 +8,7 @@ This is a Flutter + native plugins skeleton for a cross-platform voice recorder 
 
 Features include sensitivity tuning, pre-roll buffering, limited storage enforcement, scheduled recording, and platform-specific background handling.
 
-**Current status**: **Android is complete through Phase 4** (all core logic, JNI, background survival, hardening done; device validation deferred). **Phase 5 iOS is in progress:** MethodChannel/EventChannel parity, AVAudioEngine capture, permission handling, schedule CRUD, and BGTaskScheduler dispatcher are implemented; iOS WebRTC VAD linking and full device validation remain. **Next: fix iOS string interpolation bug, link WebRTC VAD for iOS, then device validation on both platforms.**
+**Current status**: Android core recording, foreground-service lifecycle, VAD fallback, storage pruning, schedule persistence, reboot recovery, and permission recovery are implemented; Gradle/CI and physical-device validation remain. iOS MethodChannel/EventChannel parity, AVAudioEngine capture, permission handling, schedule CRUD, local notification reminders, and reminder recovery are implemented. iOS scheduled recording is intentionally best-effort: notifications remind the user and do not auto-start recording. Full Xcode/Simulator/device validation remains.
 
 ---
 
@@ -28,7 +28,7 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
   - `ScheduleRecorderReceiver.kt` (44 lines) — BroadcastReceiver for AlarmManager triggers
   - `BootReceiver.kt` (49 lines) — Reschedules alarms on BOOT_COMPLETED
 - iOS (Swift) plugin with substantial implementation:
-  - `RecorderPlugin.swift` (515 lines) — MethodChannel + EventChannel parity, AVAudioEngine recorder, schedule CRUD, BGTaskScheduler
+  - `RecorderPlugin.swift` — MethodChannel + EventChannel parity, AVAudioEngine recorder, schedule CRUD, local notification reminders, and error reporting
 - Documentation:
   - `docs/design.md` — architecture, API (3 modes), platform notes
   - `docs/VAD_build_instructions.md` — WebRTC VAD build guide
@@ -56,7 +56,7 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
   - Outputs 16-bit PCM WAV files
 
 ### ✅ CI/CD
-- GitHub Actions workflow (`.github/workflows/flutter-ci.yml`) runs `flutter analyze` on PRs
+- GitHub Actions workflow (`.github/workflows/flutter-ci.yml`) runs Dart format, Flutter analyze/test, Android unit tests, Android debug APK build/artifact upload, and iOS simulator build/RunnerTests.
 
 ### ✅ Android Foundation (Complete through Phase 4)
 - Android unit tests (6 test files): `AudioFileWriterTest`, `AudioFrameBufferTest`, `BootReceiverTest`, `RecordingStorageTest`, `ScheduleStoreTest`, `VADProcessorTest`
@@ -72,11 +72,13 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
 ### ✅ License & Meta
 - MIT License
 - .gitignore configured for Flutter/Dart/Python
-- Initial README
+- Build toolchain and signing policy: `docs/BUILD_MATRIX.md`
 
 ---
 
 ## Test Coverage Report
+
+> The figures below are a historical snapshot, not measured coverage. Do not use them as a release gate; update them only from generated coverage reports.
 
 ### Overview
 
