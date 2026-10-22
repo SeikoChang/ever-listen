@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "project_memory": {
+      "command": "/opt/homebrew/bin/python3",
+      "args": [
+        "/Users/seikochang/Documents/Codex/tencentdb-memory-local/project_memory_mcp.py",
+        "--project",
+        "ever-listen"
+      ],
+      "timeout": 90,
+      "exposure": "direct",
+      "description": "Read and save memory scoped to the current Git project."
+    }
+  }
+}
