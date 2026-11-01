@@ -38,7 +38,7 @@ class _RecorderHomeState extends State<RecorderHome> {
   DateTime _scheduleEnd = DateTime.now().add(const Duration(minutes: 6));
   String _repeat = 'once';
   List<Map<String, dynamic>> _schedules = [];
-  StreamSubscription<Map<String, dynamic>>? _eventSubscription;
+  StreamSubscription<RecorderEvent>? _eventSubscription;
   bool _busy = false;
   bool _showSettingsAction = false;
   String? _pendingReminderId;
@@ -101,19 +101,18 @@ class _RecorderHomeState extends State<RecorderHome> {
     _refreshSchedules();
   }
 
-  void _handleEvent(Map<String, dynamic> event) {
+  void _handleEvent(RecorderEvent event) {
     if (!mounted) return;
-    final type = event['type']?.toString() ?? 'event';
-    final data = event['data'];
+    final type = event.type;
+    final data = event.data;
     setState(() {
       if (type == 'recordingStarted') _monitoring = true;
       if (type == 'recordingStopped' || type == 'error') _monitoring = false;
       if (type == 'recordingReminderDelivered' ||
           type == 'recordingReminderOpened') {
-        _pendingReminderId =
-            data is Map ? data['id']?.toString() : _pendingReminderId;
+        _pendingReminderId = data['id']?.toString() ?? _pendingReminderId;
       }
-      _status = data == null ? type : '$type $data';
+      _status = data.isEmpty ? type : '$type $data';
     });
   }
 
@@ -134,7 +133,7 @@ class _RecorderHomeState extends State<RecorderHome> {
       final status = await _recorder.getStatus();
       if (!mounted || status == null) return;
       setState(() {
-        _monitoring = status['running'] == true;
+        _monitoring = status.state == RecorderState.recording;
         _status = _monitoring ? 'recording' : 'idle';
       });
     } catch (error) {

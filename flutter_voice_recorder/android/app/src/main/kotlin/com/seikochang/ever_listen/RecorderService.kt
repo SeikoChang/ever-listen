@@ -80,6 +80,7 @@ class RecorderService : Service() {
         var testContext: Context? = null
 
         @Volatile private var statusRunning = false
+        @Volatile private var statusSessionId: String? = null
         @Volatile private var statusMode = "detect"
         @Volatile private var statusSensitivity = 0.6
         @Volatile private var statusMaxStorageMb = 200
@@ -94,6 +95,7 @@ class RecorderService : Service() {
             updateStorageUsed(context)
             return mapOf(
                 "running" to statusRunning,
+                "sessionId" to statusSessionId,
                 "mode" to statusMode,
                 "sensitivity" to statusSensitivity,
                 "maxStorageMb" to statusMaxStorageMb,
@@ -138,6 +140,7 @@ class RecorderService : Service() {
         
         when (action) {
             "START_RECORDING" -> {
+                statusSessionId = intent.getStringExtra("sessionId")
                 mode = intent.getStringExtra("mode") ?: "detect"
                 sensitivity = intent.getDoubleExtra("sensitivity", 0.6).coerceIn(0.0, 1.0)
                 maxStorageMb = intent.getIntExtra("maxStorageMb", maxStorageMb).coerceAtLeast(1)
@@ -228,7 +231,7 @@ class RecorderService : Service() {
                 audioCaptureLoop()
             }
             
-            emitEvent("recordingStarted", mapOf("mode" to mode))
+            emitEvent("recordingStarted", mapOf("mode" to mode, "sessionId" to statusSessionId, "state" to "recording"))
             if (scheduledSession) {
                 emitEvent("scheduleStarted", mapOf("mode" to mode))
             }
@@ -361,6 +364,7 @@ class RecorderService : Service() {
         var captureThread: Thread? = null
         var hadActiveRecording = false
         var wasScheduled = false
+        var endedSessionId: String? = null
 
         synchronized(lifecycleLock) {
             if (isShuttingDown) return
@@ -376,6 +380,7 @@ class RecorderService : Service() {
             captureThread = recordingThread
             recordingThread = null
             wasScheduled = scheduledSession
+            endedSessionId = statusSessionId
             scheduledSession = false
         }
 
@@ -410,6 +415,7 @@ class RecorderService : Service() {
             currentOutputFile = null
             statusCurrentFilePath = ""
             statusRunning = false
+            statusSessionId = null
 
             try {
                 enforceStorageLimit()
@@ -426,7 +432,7 @@ class RecorderService : Service() {
             releaseWakeLock()
 
             if (emitStoppedEvent) {
-                emitEvent("recordingStopped", mapOf())
+                emitEvent("recordingStopped", mapOf("sessionId" to endedSessionId, "state" to "idle"))
                 if (wasScheduled) {
                     emitEvent("scheduleEnded", mapOf("mode" to mode))
                 }
@@ -470,6 +476,8 @@ class RecorderService : Service() {
             try {
                 eventSinkRef.get()?.success(mapOf(
                     "type" to eventType,
+                    "state" to data["state"],
+                    "sessionId" to data["sessionId"],
                     "data" to data,
                     "timestamp" to System.currentTimeMillis()
                 ))

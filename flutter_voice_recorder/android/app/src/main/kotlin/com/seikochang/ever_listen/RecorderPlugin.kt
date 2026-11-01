@@ -96,14 +96,28 @@ class RecorderPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAw
             return
         }
 
+        val appContext = context ?: run {
+            result.error("NO_CONTEXT", "Plugin is not attached", null)
+            return
+        }
+        val current = RecorderService.statusSnapshot(appContext)
+        if (current["running"] == true) {
+            result.success(mapOf(
+                "state" to "recording",
+                "sessionId" to current["sessionId"],
+                "mode" to current["mode"]
+            ))
+            return
+        }
+
         try {
             val intent = Intent(context, RecorderService::class.java).apply {
                 action = "START_RECORDING"
                 putExtra("mode", mode)
                 putExtra("sensitivity", sensitivity)
                 putExtra("maxStorageMb", maxStorageMb)
+                putExtra("sessionId", call.argument<String>("sessionId") ?: UUID.randomUUID().toString())
             }
-            val appContext = context ?: throw IllegalStateException("Plugin is not attached")
             if (testServiceStarter != null) {
                 testServiceStarter!!.invoke(intent)
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -111,7 +125,7 @@ class RecorderPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAw
             } else {
                 appContext.startService(intent)
             }
-            result.success(mapOf("status" to "started", "mode" to mode))
+            result.success(mapOf("state" to "starting", "sessionId" to intent.getStringExtra("sessionId"), "mode" to mode))
         } catch (e: Exception) {
             result.error("START_FAILED", e.message, null)
         }
@@ -165,6 +179,7 @@ class RecorderPlugin: FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAw
         }
 
         val status = RecorderService.statusSnapshot(appContext).toMutableMap()
+        status["state"] = if (status["running"] == true) "recording" else "idle"
         status["schedules"] = ScheduleStore.list(appContext).map { it.toMap() }
         result.success(status)
     }

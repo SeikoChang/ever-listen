@@ -15,6 +15,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
   private var recorder: AudioEngineRecorder?
   private var sensitivity = 0.6
   private var maxStorageMb = 200
+  private var sessionId: String?
 
   override init() {
     super.init()
@@ -65,9 +66,15 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     case "startRecording":
       startRecording(arguments: arguments, result: result)
     case "stopRecording":
-      recorder?.stop()
+      guard let active = recorder else {
+        result(["state": "idle", "sessionId": sessionId as Any? ?? NSNull()])
+        return
+      }
+      let endedSessionId = sessionId
+      active.stop()
       recorder = nil
-      result(["status": "stopped"])
+      sessionId = nil
+      result(["state": "idle", "sessionId": endedSessionId as Any? ?? NSNull()])
     case "requestPermissions":
       requestPermissions(result: result)
     case "openAppSettings":
@@ -111,8 +118,8 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
       result(FlutterError(code: "INVALID_MODE", message: "Unsupported recording mode", details: nil))
       return
     }
-    guard recorder == nil else {
-      result(FlutterError(code: "ALREADY_RUNNING", message: "Recording is already running", details: nil))
+    if recorder != nil {
+      result(["state": "recording", "sessionId": sessionId ?? "", "mode": recorder?.mode ?? mode])
       return
     }
 
@@ -129,6 +136,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
           return
         }
         do {
+          let newSessionId = (arguments["sessionId"] as? String) ?? UUID().uuidString
           let audioRecorder = try AudioEngineRecorder(
             mode: mode,
             sensitivity: self.sensitivity,
@@ -137,7 +145,8 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
           )
           try audioRecorder.start()
           self.recorder = audioRecorder
-          result(["status": "started", "mode": mode])
+          self.sessionId = newSessionId
+          result(["state": "recording", "sessionId": newSessionId, "mode": mode])
         } catch {
           result(FlutterError(code: "START_FAILED", message: error.localizedDescription, details: nil))
         }
@@ -275,6 +284,8 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
   private func status() -> [String: Any] {
     [
       "running": recorder != nil,
+      "state": recorder == nil ? "idle" : "recording",
+      "sessionId": sessionId as Any? ?? NSNull(),
       "mode": recorder?.mode ?? "detect",
       "sensitivity": sensitivity,
       "maxStorageMb": maxStorageMb,
@@ -387,7 +398,15 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
   }
 
   private func sendEvent(_ type: String, _ data: [String: Any]) {
-    eventSink?(["type": type, "data": data, "timestamp": Int(Date().timeIntervalSince1970 * 1000)])
+    var event: [String: Any] = ["type": type, "data": data, "timestamp": Int(Date().timeIntervalSince1970 * 1000)]
+    if type == "recordingStarted" {
+      event["state"] = "recording"
+      event["sessionId"] = sessionId ?? ""
+    } else if type == "recordingStopped" {
+      event["state"] = "idle"
+      event["sessionId"] = sessionId ?? ""
+    }
+    eventSink?(event)
   }
 
   func normalizedSchedules(now: Double) -> [[String: Any]] {

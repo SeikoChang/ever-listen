@@ -31,14 +31,30 @@ await recorder.scheduleRecording({
 });
 
 // Get current status
-Map<String, dynamic>? status = await recorder.getStatus();
+RecorderStatus? status = await recorder.getStatus();
 
 // Listen to events
-recorder.events.listen((String event) {
+recorder.events.listen((RecorderEvent event) {
   // 'speechStarted', 'speechEnded', 'fileReady:/path/to/file',
   // 'scheduleStarted', 'scheduleEnded'
 });
 ```
+
+## Shared recorder state contract
+
+The Dart, Android, and iOS recorder API uses `idle`, `starting`, `recording`,
+`stopping`, `interrupted`, and `error`. A start request enters `starting`; only
+after native capture is active does it enter `recording`. Stop enters
+`stopping`, then `idle` after file finalization. Startup failures enter
+`error`. Platform interruption handling is owned by EVE-204; interruption
+does not automatically resume capture. A future explicit recovery may return
+the same session to `recording` only when native confirms it is safe.
+
+Each accepted session has a stable `sessionId`. Repeated start while a session
+is active returns the current session, and repeated stop is harmless. Status
+includes lifecycle state and session ID; lifecycle events include typed
+`type`, `state`, `sessionId`, `data`, and timestamp fields. Durable event
+acknowledgement/replay and typed schedule models are tracked separately.
 
 ## Recording Modes
 

@@ -8,6 +8,19 @@ void main() {
   final RecorderPlugin recorder = RecorderPlugin();
   final List<MethodCall> log = <MethodCall>[];
 
+  test('shared state contract rejects implicit interruption recovery', () {
+    expect(canTransitionRecorderState(RecorderState.idle, RecorderState.starting), isTrue);
+    expect(canTransitionRecorderState(RecorderState.starting, RecorderState.recording), isTrue);
+    expect(canTransitionRecorderState(RecorderState.recording, RecorderState.interrupted), isTrue);
+    expect(canTransitionRecorderState(RecorderState.interrupted, RecorderState.recording), isFalse);
+    expect(
+      canTransitionRecorderState(RecorderState.interrupted, RecorderState.recording,
+          explicitRecovery: true),
+      isTrue,
+    );
+    expect(canTransitionRecorderState(RecorderState.idle, RecorderState.recording), isFalse);
+  });
+
   // Set up mock method channel handler
   setUp(() {
     log.clear();
@@ -130,20 +143,13 @@ void main() {
     expect(log.single.arguments, {'maxStorageMb': 100});
   });
 
-  test('getStatus returns structured status map', () async {
+  test('getStatus returns typed recorder snapshot', () async {
     final status = await recorder.getStatus();
 
     expect(log, hasLength(1));
     expect(log.single.method, 'getStatus');
-    expect(status, {
-      'running': true,
-      'mode': 'detect',
-      'sensitivity': 0.6,
-      'maxStorageMb': 200,
-      'currentFilePath': '/path/to/file.wav',
-      'storageUsedMb': 12.5,
-      'schedules': []
-    });
+    expect(status?.state, RecorderState.recording);
+    expect(status?.mode, 'detect');
   });
 
   test('scheduleRecording invokes method channel and returns map', () async {
