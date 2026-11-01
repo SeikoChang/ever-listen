@@ -49,13 +49,11 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
 
   public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
     eventSink = events
-    recorder?.eventSink = events
     return nil
   }
 
   public func onCancel(withArguments arguments: Any?) -> FlutterError? {
     eventSink = nil
-    recorder?.eventSink = nil
     return nil
   }
 
@@ -141,7 +139,9 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
             mode: mode,
             sensitivity: self.sensitivity,
             maxStorageMb: self.maxStorageMb,
-            eventSink: self.eventSink
+            eventSink: { [weak self] type, data in
+              self?.sendEvent(type, data, sessionId: newSessionId)
+            }
           )
           try audioRecorder.start()
           self.recorder = audioRecorder
@@ -397,14 +397,14 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     center.removeDeliveredNotifications(withIdentifiers: [identifier])
   }
 
-  private func sendEvent(_ type: String, _ data: [String: Any]) {
+  private func sendEvent(_ type: String, _ data: [String: Any], sessionId eventSessionId: String? = nil) {
     var event: [String: Any] = ["type": type, "data": data, "timestamp": Int(Date().timeIntervalSince1970 * 1000)]
     if type == "recordingStarted" {
       event["state"] = "recording"
-      event["sessionId"] = sessionId ?? ""
+      event["sessionId"] = eventSessionId ?? sessionId ?? ""
     } else if type == "recordingStopped" {
       event["state"] = "idle"
-      event["sessionId"] = sessionId ?? ""
+      event["sessionId"] = eventSessionId ?? sessionId ?? ""
     }
     eventSink?(event)
   }
@@ -461,7 +461,7 @@ private final class AudioEngineRecorder {
     didSet { vadProcessor?.setSensitivity(sensitivity) }
   }
   var maxStorageMb: Int
-  var eventSink: FlutterEventSink?
+  var eventSink: ((String, [String: Any]) -> Void)?
   private let engine = AVAudioEngine()
   private var outputFile: AVAudioFile?
   private var speechActive = false
@@ -482,7 +482,7 @@ private final class AudioEngineRecorder {
 
   var storageUsedMb: Double { storageBytes() / (1024 * 1024) }
 
-  init(mode: String, sensitivity: Double, maxStorageMb: Int, eventSink: FlutterEventSink?) throws {
+  init(mode: String, sensitivity: Double, maxStorageMb: Int, eventSink: ((String, [String: Any]) -> Void)?) throws {
     self.mode = mode
     self.sensitivity = sensitivity
     self.maxStorageMb = maxStorageMb
@@ -695,7 +695,7 @@ private final class AudioEngineRecorder {
 
   private func emit(_ type: String, _ data: [String: Any]) {
     DispatchQueue.main.async { [weak self] in
-      self?.eventSink?(["type": type, "data": data, "timestamp": Int(Date().timeIntervalSince1970 * 1000)])
+      self?.eventSink?(type, data)
     }
   }
 }
