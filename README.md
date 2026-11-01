@@ -24,8 +24,10 @@ Android unit tests:
 
 ```sh
 cd flutter_voice_recorder/android
-./gradlew test --no-daemon --console=plain
+gradle :app:createDebugUnitTestCoverageReport --no-daemon --console=plain
 ```
+
+Install Gradle `9.1.0` and use Java 17. CI also generates an Android native coverage report; see [docs/BUILD_MATRIX.md](docs/BUILD_MATRIX.md).
 
 See [docs/BUILD_MATRIX.md](docs/BUILD_MATRIX.md) for the toolchain, signing, and CI expectations.
 
