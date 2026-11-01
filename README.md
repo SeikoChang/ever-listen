@@ -37,6 +37,7 @@ The repository has Flutter tests and Android/iOS native unit-test suites. Full A
 
 - [Enhancement plan](docs/ENHANCE_PLAN.md)
 - [Task backlog](TODOs.md)
+- [Product and store copy draft](docs/PRODUCT_COPY_DRAFT.md)
 - [Build matrix](docs/BUILD_MATRIX.md)
 - [Chinese manual test plan](docs/manual_testing_zh.md)
 - [VAD build instructions](docs/VAD_build_instructions.md)
