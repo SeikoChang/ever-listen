@@ -421,13 +421,15 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
         ? 7.0 * 24 * 60 * 60 * 1000
         : 24.0 * 60 * 60 * 1000
 
-      while end <= now {
-        if repeatValue == "once" {
-          schedule = [:]
-          break
+      if repeatValue == "once" {
+        if end <= now { schedule = [:] }
+      } else if start <= now && end <= now {
+        // Match Android: preserve an active window, otherwise advance to the
+        // next recurring occurrence whose start is still in the future.
+        while start <= now {
+          start += interval
+          end += interval
         }
-        start += interval
-        end += interval
       }
       guard !schedule.isEmpty else { continue }
       schedule["startTimeMillis"] = Int64(start)
