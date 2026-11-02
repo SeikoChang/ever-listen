@@ -62,7 +62,10 @@ class RecorderPluginTest {
         val result = captureResult()
         plugin.onMethodCall(MethodCall("startRecording", mapOf("mode" to "detect")), result)
         assertTrue(result.called)
-        assertEquals("started", (result.value as Map<*, *>)["status"])
+        val response = result.value as Map<*, *>
+        assertEquals("starting", response["state"])
+        assertEquals("detect", response["mode"])
+        assertTrue((response["sessionId"] as? String).orEmpty().isNotBlank())
     }
 
     @Test
