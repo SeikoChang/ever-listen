@@ -1,6 +1,8 @@
 import AVFoundation
 import Flutter
 import Foundation
+import os
+import UIKit
 import UserNotifications
 
 public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
@@ -14,6 +16,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
   private var recorder: AudioEngineRecorder?
   private var sensitivity = 0.6
   private var maxStorageMb = 200
+  private var sessionId: String?
 
   override init() {
     super.init()
@@ -47,13 +50,11 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
 
   public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
     eventSink = events
-    recorder?.eventSink = events
     return nil
   }
 
   public func onCancel(withArguments arguments: Any?) -> FlutterError? {
     eventSink = nil
-    recorder?.eventSink = nil
     return nil
   }
 
@@ -64,11 +65,29 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     case "startRecording":
       startRecording(arguments: arguments, result: result)
     case "stopRecording":
-      recorder?.stop()
+      guard let active = recorder else {
+        result(["state": "idle", "sessionId": sessionId as Any? ?? NSNull()])
+        return
+      }
+      let endedSessionId = sessionId
+      active.stop()
       recorder = nil
-      result(["status": "stopped"])
+      sessionId = nil
+      result(["state": "idle", "sessionId": endedSessionId as Any? ?? NSNull()])
     case "requestPermissions":
       requestPermissions(result: result)
+    case "openAppSettings":
+      guard let url = URL(string: UIApplication.openSettingsURLString) else {
+        result(FlutterError(code: "OPEN_SETTINGS_FAILED", message: "Settings URL is unavailable", details: nil))
+        return
+      }
+      UIApplication.shared.open(url) { opened in
+        if opened {
+          result(true)
+        } else {
+          result(FlutterError(code: "OPEN_SETTINGS_FAILED", message: "Unable to open system settings", details: nil))
+        }
+      }
     case "setSensitivity":
       let value = number(arguments["sensitivity"]) ?? sensitivity
       sensitivity = min(max(value, 0), 1)
@@ -98,8 +117,8 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
       result(FlutterError(code: "INVALID_MODE", message: "Unsupported recording mode", details: nil))
       return
     }
-    guard recorder == nil else {
-      result(FlutterError(code: "ALREADY_RUNNING", message: "Recording is already running", details: nil))
+    if recorder != nil {
+      result(["state": "recording", "sessionId": sessionId ?? "", "mode": recorder?.mode ?? mode])
       return
     }
 
@@ -116,15 +135,17 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
           return
         }
         do {
+          let newSessionId = (arguments["sessionId"] as? String) ?? UUID().uuidString
           let audioRecorder = try AudioEngineRecorder(
             mode: mode,
             sensitivity: self.sensitivity,
             maxStorageMb: self.maxStorageMb,
-            eventSink: self.eventSink
+            eventSink: self.recorderEventSink(for: newSessionId)
           )
           try audioRecorder.start()
           self.recorder = audioRecorder
-          result(["status": "started", "mode": mode])
+          self.sessionId = newSessionId
+          result(["state": "recording", "sessionId": newSessionId, "mode": mode])
         } catch {
           result(FlutterError(code: "START_FAILED", message: error.localizedDescription, details: nil))
         }
@@ -262,6 +283,8 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
   private func status() -> [String: Any] {
     [
       "running": recorder != nil,
+      "state": recorder == nil ? "idle" : "recording",
+      "sessionId": sessionId as Any? ?? NSNull(),
       "mode": recorder?.mode ?? "detect",
       "sensitivity": sensitivity,
       "maxStorageMb": maxStorageMb,
@@ -277,11 +300,23 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
   }
 
   func loadSchedules() -> [[String: Any]] {
-    guard let data = UserDefaults.standard.data(forKey: Self.schedulesKey),
-          let decoded = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+    guard let data = UserDefaults.standard.data(forKey: Self.schedulesKey) else {
       return []
     }
-    return decoded
+    do {
+      let object = try JSONSerialization.jsonObject(with: data)
+      guard let decoded = object as? [[String: Any]] else {
+        sendEvent("error", ["code": "SCHEDULE_DATA_INVALID", "message": "Stored schedules are not a list"])
+        return []
+      }
+      return decoded
+    } catch {
+      sendEvent("error", [
+        "code": "SCHEDULE_DATA_INVALID",
+        "message": "Unable to decode stored schedules: \(error.localizedDescription)",
+      ])
+      return []
+    }
   }
 
   @discardableResult
@@ -361,8 +396,22 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     center.removeDeliveredNotifications(withIdentifiers: [identifier])
   }
 
-  private func sendEvent(_ type: String, _ data: [String: Any]) {
-    eventSink?(["type": type, "data": data, "timestamp": Int(Date().timeIntervalSince1970 * 1000)])
+  private func sendEvent(_ type: String, _ data: [String: Any], sessionId eventSessionId: String? = nil) {
+    var event: [String: Any] = ["type": type, "data": data, "timestamp": Int(Date().timeIntervalSince1970 * 1000)]
+    if type == "recordingStarted" {
+      event["state"] = "recording"
+      event["sessionId"] = eventSessionId ?? sessionId ?? ""
+    } else if type == "recordingStopped" {
+      event["state"] = "idle"
+      event["sessionId"] = eventSessionId ?? sessionId ?? ""
+    }
+    eventSink?(event)
+  }
+
+  func recorderEventSink(for sessionId: String) -> (String, [String: Any]) -> Void {
+    { [weak self] type, data in
+      self?.sendEvent(type, data, sessionId: sessionId)
+    }
   }
 
   func normalizedSchedules(now: Double) -> [[String: Any]] {
@@ -376,13 +425,15 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
         ? 7.0 * 24 * 60 * 60 * 1000
         : 24.0 * 60 * 60 * 1000
 
-      while end <= now {
-        if repeatValue == "once" {
-          schedule = [:]
-          break
+      if repeatValue == "once" {
+        if end <= now { schedule = [:] }
+      } else if start <= now && end <= now {
+        // Match Android: preserve an active window, otherwise advance to the
+        // next recurring occurrence whose start is still in the future.
+        while start <= now {
+          start += interval
+          end += interval
         }
-        start += interval
-        end += interval
       }
       guard !schedule.isEmpty else { continue }
       schedule["startTimeMillis"] = Int64(start)
@@ -402,13 +453,14 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
       at: storageDirectory(), includingPropertiesForKeys: [.fileSizeKey]
     ) else { return 0 }
     let bytes = files.reduce(Int64(0)) { total, url in
-      total + (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize).flatMap(Int64.init) ?? 0
+      let fileSize = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
+      return total + Int64(fileSize)
     }
     return Double(bytes) / (1024 * 1024)
   }
 }
 
-private final class AudioEngineRecorder {
+final class AudioEngineRecorder {
   fileprivate static let vadSampleRate = 16_000.0
   fileprivate static let vadFrameSampleCount = 320 // 20 ms at 16 kHz
 
@@ -417,7 +469,7 @@ private final class AudioEngineRecorder {
     didSet { vadProcessor?.setSensitivity(sensitivity) }
   }
   var maxStorageMb: Int
-  var eventSink: FlutterEventSink?
+  var eventSink: ((String, [String: Any]) -> Void)?
   private let engine = AVAudioEngine()
   private var outputFile: AVAudioFile?
   private var speechActive = false
@@ -438,7 +490,12 @@ private final class AudioEngineRecorder {
 
   var storageUsedMb: Double { storageBytes() / (1024 * 1024) }
 
-  init(mode: String, sensitivity: Double, maxStorageMb: Int, eventSink: FlutterEventSink?) throws {
+  init(
+    mode: String,
+    sensitivity: Double,
+    maxStorageMb: Int,
+    eventSink: ((String, [String: Any]) -> Void)?
+  ) throws {
     self.mode = mode
     self.sensitivity = sensitivity
     self.maxStorageMb = maxStorageMb
@@ -468,7 +525,14 @@ private final class AudioEngineRecorder {
       emit("recordingStarted", ["mode": mode])
     } catch {
       input.removeTap(onBus: 0)
-      try? session.setActive(false, options: .notifyOthersOnDeactivation)
+      do {
+        try session.setActive(false, options: .notifyOthersOnDeactivation)
+      } catch let cleanupError {
+        emit("error", [
+          "code": "AUDIO_SESSION_CLEANUP_FAILED",
+          "message": cleanupError.localizedDescription,
+        ])
+      }
       throw error
     }
   }
@@ -491,7 +555,13 @@ private final class AudioEngineRecorder {
       return
     }
 
-    let speech = processVAD(buffer) ?? (rms(buffer) > (0.02 + (1 - sensitivity) * 0.08))
+    let speech: Bool
+    if let vadSpeech = processVAD(buffer) {
+      speech = vadSpeech
+    } else {
+      let threshold = Float(0.02 + (1 - sensitivity) * 0.08)
+      speech = rms(buffer) > threshold
+    }
     if speech {
       silenceFrames = 0
       if !speechActive {
@@ -642,9 +712,10 @@ private final class AudioEngineRecorder {
       ?? .distantPast
   }
 
-  private func emit(_ type: String, _ data: [String: Any]) {
-    DispatchQueue.main.async { [weak self] in
-      self?.eventSink?(["type": type, "data": data, "timestamp": Int(Date().timeIntervalSince1970 * 1000)])
+  func emit(_ type: String, _ data: [String: Any]) {
+    let sink = eventSink
+    DispatchQueue.main.async {
+      sink?(type, data)
     }
   }
 }
@@ -673,7 +744,7 @@ private final class WebRTCVADProcessor {
     let s = sensitivity.clamped(to: 0.0...1.0)
     let aggressiveness = Int((1.0 - s) * 3).clamped(to: 0...3)
     vad_destroy(handle)
-    handle = vad_init(aggressiveness)
+    handle = vad_init(Int32(aggressiveness))
   }
 
   /// Process one mono PCM16 frame at 16 kHz. Returns nil if the native VAD is

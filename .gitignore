@@ -13,6 +13,15 @@ flutter_voice_recorder/.dart_tool/
 flutter_voice_recorder/build/
 **/generated_plugin_registrant.*
 
+# Local build logs and scratch notes
+**/result*.txt
+docs/tmp*.txt
+
+# Android signing material (never commit credentials or keystores)
+*.jks
+*.keystore
+**/key.properties
+
 # macOS
 .DS_Store
 

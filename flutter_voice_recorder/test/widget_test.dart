@@ -13,8 +13,11 @@ import 'package:flutter_voice_recorder/main.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('Ever Listen app renders its recorder screen', (WidgetTester tester) async {
-    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+  testWidgets('Ever Listen app renders its recorder screen', (
+    WidgetTester tester,
+  ) async {
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     final recorderChannel = const MethodChannel('ever_listen/recorder');
     final eventsChannel = const MethodChannel('ever_listen/events');
 

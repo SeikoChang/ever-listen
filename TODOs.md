@@ -142,13 +142,13 @@
 ### 11.5 正式簽署、隱私與 API 對稱
 
 - [x] Android release 已移除 debug signing 並支援 Gradle property 注入，待正式 keystore/CI secret 驗證 <!-- id: 92 -->
-- [ ] 由 CI secrets 或本機安全設定注入 Android release signing credentials <!-- id: 93 -->
-- [ ] 建立可重現的 `flutter build appbundle --release` gate 與 artifact <!-- id: 94 -->
+- [ ] 由 CI secrets 或本機安全設定注入 Android release signing credentials（已文件化 Gradle properties 與 ignore 規則，待正式 CI secret/keystore） <!-- id: 93 -->
+- [ ] CI 已加入可重現的 `flutter build appbundle --release` compile gate；正式 signed artifact 待 keystore/CI secret <!-- id: 94 -->
 - [ ] 實作首次使用隱私與錄音同意說明，清楚解釋麥克風、背景執行與儲存用途 <!-- id: 95 -->
-- [ ] Android 與 iOS 都提供明顯且持續的錄音中指示 <!-- id: 96 -->
-- [ ] 實作權限拒絕、永久拒絕與前往系統設定的復原流程 <!-- id: 97 -->
+- [x] Android 與 iOS 都提供明顯且持續的錄音中指示（Android foreground notification、iOS audio session/recording events 已實作，待實機驗證） <!-- id: 96 -->
+- [x] 實作權限拒絕、永久拒絕與前往系統設定的復原流程（已加入跨平台 `openAppSettings`、Flutter/Android MethodChannel tests，待 native/CI 驗證） <!-- id: 97 -->
 - [x] 在 iOS MethodChannel 補齊 `requestPermissions`，維持 Dart/Android/iOS API 對稱 <!-- id: 98 -->
-- [ ] 移除 iOS 關鍵路徑的 `try?` 靜默吞錯，定義穩定 error code 與診斷訊息 <!-- id: 99 -->
+- [x] 移除 iOS 關鍵路徑的 `try?` 靜默吞錯，定義穩定 error code 與診斷訊息（已處理 schedule decode 與 audio session cleanup，待完整 Xcode typecheck） <!-- id: 99 -->
 - [x] 讓 iOS reminder save/create 具交易語意；通知建立或持久化失敗不得留下看似有效的排程 <!-- id: 100 -->
 - [ ] 建立隱私政策、錄音法規提醒、資料保留/刪除說明及 App Store/Play 揭露清單 <!-- id: 101 -->
 
@@ -188,8 +188,8 @@
 - [ ] 定義重疊排程的拒絕、合併或優先權規則並實作 <!-- id: 125 -->
 - [ ] 定義 missed window 行為：立即啟動、標記 missed 或跳到下一次 <!-- id: 126 -->
 - [x] 修正 BootReceiver 在重開機時略過仍位於有效區間內排程的問題（已補回歸測試，待 Gradle CI 驗證） <!-- id: 127 -->
-- [ ] 將 SharedPreferences 的 `|` 編碼改為 JSON 或 Room，加入 schema version 與 migration <!-- id: 128 -->
-- [ ] 將 PendingIntent request code 改為持久化唯一整數，避免 `hashCode()` 碰撞 <!-- id: 129 -->
+- [x] 將 SharedPreferences 的 `|` 編碼改為 JSON 或 Room，加入 schema version 與 migration（已加入 v1 相容讀取與自動升級，待 Gradle CI 驗證） <!-- id: 128 -->
+- [x] 將 PendingIntent request code 改為持久化唯一整數，避免 `hashCode()` 碰撞（已保留舊鬧鐘取消相容性，待 Gradle CI 驗證） <!-- id: 129 -->
 - [ ] 只有使用者可感知且真的需要準點的排程使用 exact alarm，其餘採 inexact/WorkManager <!-- id: 130 -->
 - [ ] 處理 exact-alarm 權限狀態變更 broadcast，重新排程或降級並通知使用者 <!-- id: 131 -->
 - [ ] 測試 once/daily/weekly、DST、重疊、重開機、權限移除與時鐘變更 <!-- id: 132 -->
@@ -208,10 +208,10 @@
 
 - [ ] CI 已加入 Dart format check、`flutter analyze` 與 `flutter test`，待 GitHub Actions 實際通過 <!-- id: 140 -->
 - [ ] CI 已加入 Ubuntu + JDK 17 Android unit-test job，待 GitHub Actions 實際通過 <!-- id: 141 -->
-- [ ] CI 建置 Android debug APK 與正式簽署的 release AAB <!-- id: 142 -->
+- [ ] CI 已加入 Android debug APK artifact；正式簽署 release AAB 待 keystore/CI secret 就緒 <!-- id: 142 -->
 - [ ] CI 已加入 macOS iOS simulator build/RunnerTests job，待 GitHub Actions 實際通過 <!-- id: 143 -->
 - [ ] 建立跨平台 MethodChannel contract tests 與核心 feature parity tests <!-- id: 144 -->
-- [ ] 產生並保存真實 coverage report，移除 AGENT/TODO 中的人工估計值 <!-- id: 145 -->
+- [ ] CI 已產生並保存 Flutter `lcov.info`；Android/iOS native coverage 與移除 AGENT 中歷史估計值仍待完成 <!-- id: 145 -->
 - [ ] 將所有 build/test gate 設為 pull request 必須通過的 checks <!-- id: 146 -->
 
 ## Phase 13: P2 — 品質、留存與維運
@@ -240,11 +240,11 @@
 - [ ] 將 Android 大型 service/plugin 拆為 RecorderEngine、StateMachine、Scheduler、Storage、PermissionManager <!-- id: 160 -->
 - [ ] 將 iOS 大型 plugin/recorder 依相同職責拆分並導入 dependency injection <!-- id: 161 -->
 - [x] 移除 `android.builtInKotlin=false`、`android.newDsl=false` 與 AGP 9 不需要的 Kotlin Android plugin（待 Gradle CI 驗證） <!-- id: 162 -->
-- [ ] 鎖定並文件化 JDK、Flutter、Dart、AGP、Gradle、Kotlin、NDK 與 Xcode 版本 <!-- id: 163 -->
+- [ ] 鎖定並文件化 JDK、Flutter、Dart、AGP、Gradle、Kotlin、NDK 與 Xcode 版本（Flutter CI 已更新至 `3.41.4`；NDK/Xcode 仍待 CI/clean runner 最終確認） <!-- id: 163 -->
 - [ ] 在乾淨環境重新建置 Android native artifacts，排除 NDK/CMake 警告 <!-- id: 164 -->
-- [ ] 重寫根目錄與 Flutter README：產品目的、架構、建置、測試、限制及隱私 <!-- id: 165 -->
+- [x] 重寫根目錄與 Flutter README：產品目的、架構、建置、測試、限制及隱私（產品/法律細節仍由 ID 101、187 追蹤） <!-- id: 165 -->
 - [ ] 更新 `AGENT.md`、`TODOs.md` 與實際 build/test 狀態，建立每次 release 的文件檢查 <!-- id: 166 -->
-- [ ] 清理或移出 `result.txt`、`result_short.txt`、`docs/tmp*` 等暫存/產出物並補 `.gitignore` <!-- id: 167 -->
+- [x] 清理或移出 `result.txt`、`result_short.txt`、`docs/tmp*` 等暫存/產出物並補 `.gitignore` <!-- id: 167 -->
 
 ### 13.4 實機與 OEM 測試矩陣
 

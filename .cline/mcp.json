@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "project_memory": {
+      "command": "/opt/homebrew/bin/python3",
+      "args": [
+        "/Users/seikochang/Documents/Codex/tencentdb-memory-local/project_memory_mcp.py",
+        "--project",
+        "ever-listen"
+      ],
+      "type": "stdio",
+      "disabled": false,
+      "timeout": 90,
+      "autoApprove": [
+        "project_memory_read",
+        "project_memory_search",
+        "project_wiki_search",
+        "project_codegraph_search"
+      ]
+    }
+  }
+}

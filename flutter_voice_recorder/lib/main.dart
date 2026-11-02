@@ -38,8 +38,9 @@ class _RecorderHomeState extends State<RecorderHome> {
   DateTime _scheduleEnd = DateTime.now().add(const Duration(minutes: 6));
   String _repeat = 'once';
   List<Map<String, dynamic>> _schedules = [];
-  StreamSubscription<Map<String, dynamic>>? _eventSubscription;
+  StreamSubscription<RecorderEvent>? _eventSubscription;
   bool _busy = false;
+  bool _showSettingsAction = false;
   String? _pendingReminderId;
 
   Future<void> _toggleRecording() async {
@@ -73,6 +74,7 @@ class _RecorderHomeState extends State<RecorderHome> {
       if (!mounted) return;
       setState(() {
         _status = 'Recording failed: $error';
+        _showSettingsAction = error.toString().contains('PERMISSION');
       });
     } finally {
       if (mounted) {
@@ -99,19 +101,18 @@ class _RecorderHomeState extends State<RecorderHome> {
     _refreshSchedules();
   }
 
-  void _handleEvent(Map<String, dynamic> event) {
+  void _handleEvent(RecorderEvent event) {
     if (!mounted) return;
-    final type = event['type']?.toString() ?? 'event';
-    final data = event['data'];
+    final type = event.type;
+    final data = event.data;
     setState(() {
       if (type == 'recordingStarted') _monitoring = true;
       if (type == 'recordingStopped' || type == 'error') _monitoring = false;
       if (type == 'recordingReminderDelivered' ||
           type == 'recordingReminderOpened') {
-        _pendingReminderId =
-            data is Map ? data['id']?.toString() : _pendingReminderId;
+        _pendingReminderId = data['id']?.toString() ?? _pendingReminderId;
       }
-      _status = data == null ? type : '$type $data';
+      _status = data.isEmpty ? type : '$type $data';
     });
   }
 
@@ -132,7 +133,7 @@ class _RecorderHomeState extends State<RecorderHome> {
       final status = await _recorder.getStatus();
       if (!mounted || status == null) return;
       setState(() {
-        _monitoring = status['running'] == true;
+        _monitoring = status.state == RecorderState.recording;
         _status = _monitoring ? 'recording' : 'idle';
       });
     } catch (error) {
@@ -207,6 +208,7 @@ class _RecorderHomeState extends State<RecorderHome> {
         if (permissions['notifications'] != true) {
           setState(() {
             _status = 'Notifications are required for iOS recording reminders';
+            _showSettingsAction = true;
           });
           return;
         }
@@ -231,6 +233,7 @@ class _RecorderHomeState extends State<RecorderHome> {
       if (!mounted) return;
       setState(() {
         _status = 'Unable to create schedule: $error';
+        _showSettingsAction = error.toString().contains('PERMISSION');
       });
     }
   }
@@ -303,6 +306,21 @@ class _RecorderHomeState extends State<RecorderHome> {
             ]),
             const SizedBox(height: 20),
             Text('Status: $_status'),
+            if (_showSettingsAction)
+              TextButton.icon(
+                onPressed: () async {
+                  try {
+                    await _recorder.openAppSettings();
+                  } catch (error) {
+                    if (!mounted) return;
+                    setState(() {
+                      _status = 'Unable to open app settings: $error';
+                    });
+                  }
+                },
+                icon: const Icon(Icons.settings),
+                label: const Text('Open app settings'),
+              ),
             if (_pendingReminderId != null && !_monitoring) ...[
               const SizedBox(height: 8),
               ElevatedButton.icon(

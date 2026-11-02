@@ -1,7 +1,9 @@
 name: Flutter CI
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - 'taskboard/**'
   pull_request:
     branches: [ main ]
 
@@ -12,12 +14,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
+          flutter-version: '3.41.4'
           channel: 'stable'
       - run: cd flutter_voice_recorder && flutter pub get
       - run: cd flutter_voice_recorder && dart format --output=none --set-exit-if-changed lib test
       - run: cd flutter_voice_recorder && flutter analyze
-      - run: cd flutter_voice_recorder && flutter test
+      - run: cd flutter_voice_recorder && flutter test --coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ever-listen-flutter-coverage
+          path: flutter_voice_recorder/coverage/lcov.info
+          if-no-files-found: error
 
   android-unit-test:
     runs-on: ubuntu-latest
@@ -29,10 +36,32 @@ jobs:
           java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
+          flutter-version: '3.41.4'
           channel: 'stable'
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '9.1.0'
       - run: cd flutter_voice_recorder && flutter pub get
-      - run: cd flutter_voice_recorder/android && ./gradlew test --no-daemon --console=plain
+      - run: >-
+          cd flutter_voice_recorder/android &&
+          gradle :app:createDebugUnitTestCoverageReport
+          --no-daemon --console=plain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ever-listen-android-native-coverage
+          path: flutter_voice_recorder/build/app/reports/coverage/test/debug/
+          if-no-files-found: error
+      - run: >-
+          cd flutter_voice_recorder/android &&
+          gradle wrapper --gradle-version 9.1.0 --distribution-type all
+          --no-daemon --console=plain
+      - run: cd flutter_voice_recorder && flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ever-listen-android-debug-apk
+          path: flutter_voice_recorder/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
+      - run: cd flutter_voice_recorder && flutter build appbundle --release
 
   ios-simulator-test:
     runs-on: macos-14
@@ -40,15 +69,27 @@ jobs:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
+          flutter-version: '3.41.4'
           channel: 'stable'
       - run: cd flutter_voice_recorder && flutter pub get
       - run: cd flutter_voice_recorder && flutter build ios --simulator --no-codesign
       - run: >-
-          cd flutter_voice_recorder && xcodebuild test
+          cd flutter_voice_recorder && mkdir -p build/coverage && xcodebuild test
           -project ios/Runner.xcodeproj
           -scheme Runner
           -sdk iphonesimulator
           -destination 'platform=iOS Simulator,name=iPhone 15'
           -parallel-testing-enabled NO
+          -enableCodeCoverage YES
+          -resultBundlePath build/coverage/ios-native-coverage.xcresult
           CODE_SIGNING_ALLOWED=NO
+      - run: >-
+          cd flutter_voice_recorder &&
+          xcrun xccov view --report --json
+          build/coverage/ios-native-coverage.xcresult
+          > build/coverage/ios-native-coverage.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ever-listen-ios-native-coverage
+          path: flutter_voice_recorder/build/coverage/
+          if-no-files-found: error

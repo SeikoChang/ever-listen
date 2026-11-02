@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import org.json.JSONObject
 
 data class RecordingSchedule(
     val id: String,
@@ -31,8 +32,11 @@ data class RecordingSchedule(
 object ScheduleStore {
     private const val PREFS_NAME = "ever_listen_schedules"
     private const val KEY_IDS = "schedule_ids"
+    private const val KEY_NEXT_REQUEST_CODE = "next_schedule_request_code"
+    private const val REQUEST_CODE_START = 1000
     private const val ACTION_START = "com.seikochang.ever_listen.SCHEDULE_START"
     private const val ACTION_STOP = "com.seikochang.ever_listen.SCHEDULE_STOP"
+    private const val CURRENT_SCHEMA_VERSION = 2
 
     fun add(context: Context, schedule: RecordingSchedule) {
         get(context, schedule.id)?.let { cancelAlarms(context, it) }
@@ -45,7 +49,11 @@ object ScheduleStore {
         cancelAlarms(context, schedule)
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val ids = ids(context).filterNot { it == id }.toSet()
-        prefs.edit().remove(key(id)).putStringSet(KEY_IDS, ids).apply()
+        prefs.edit()
+            .remove(key(id))
+            .remove(requestCodeKey(id))
+            .putStringSet(KEY_IDS, ids)
+            .apply()
         return true
     }
 
@@ -54,18 +62,15 @@ object ScheduleStore {
     fun get(context: Context, id: String): RecordingSchedule? {
         val raw = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString(key(id), null)
             ?: return null
-        val parts = raw.split("|")
-        if (parts.size != 8) return null
-        return RecordingSchedule(
-            id = id,
-            startTimeMillis = parts[0].toLongOrNull() ?: return null,
-            endTimeMillis = parts[1].toLongOrNull() ?: return null,
-            repeat = parts[2],
-            timezone = parts[3],
-            mode = parts[4],
-            sensitivity = parts[5].toDoubleOrNull() ?: 0.6,
-            maxStorageMb = parts[6].toIntOrNull() ?: 200
-        )
+        val schedule = if (raw.trimStart().startsWith("{")) {
+            decodeJson(id, raw)
+        } else {
+            decodeLegacy(id, raw)
+        } ?: return null
+
+        // Migrate the legacy delimiter format on first successful read.
+        if (!raw.trimStart().startsWith("{")) save(context, schedule)
+        return schedule
     }
 
     fun rescheduleNext(context: Context, id: String) {
@@ -90,17 +95,53 @@ object ScheduleStore {
     private fun save(context: Context, schedule: RecordingSchedule) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val ids = ids(context).plus(schedule.id).toSet()
-        val encoded = listOf(
-            schedule.startTimeMillis,
-            schedule.endTimeMillis,
-            schedule.repeat,
-            schedule.timezone,
-            schedule.mode,
-            schedule.sensitivity,
-            schedule.maxStorageMb,
-            "v1"
-        ).joinToString("|")
+        val encoded = JSONObject().apply {
+            put("schemaVersion", CURRENT_SCHEMA_VERSION)
+            put("id", schedule.id)
+            put("startTimeMillis", schedule.startTimeMillis)
+            put("endTimeMillis", schedule.endTimeMillis)
+            put("repeat", schedule.repeat)
+            put("timezone", schedule.timezone)
+            put("mode", schedule.mode)
+            put("sensitivity", schedule.sensitivity)
+            put("maxStorageMb", schedule.maxStorageMb)
+        }.toString()
         prefs.edit().putStringSet(KEY_IDS, ids).putString(key(schedule.id), encoded).apply()
+    }
+
+    private fun decodeJson(id: String, raw: String): RecordingSchedule? = try {
+        val json = JSONObject(raw)
+        if (json.optInt("schemaVersion", -1) != CURRENT_SCHEMA_VERSION) {
+            null
+        } else {
+            RecordingSchedule(
+                id = id,
+                startTimeMillis = json.getLong("startTimeMillis"),
+                endTimeMillis = json.getLong("endTimeMillis"),
+                repeat = json.getString("repeat"),
+                timezone = json.getString("timezone"),
+                mode = json.getString("mode"),
+                sensitivity = json.getDouble("sensitivity"),
+                maxStorageMb = json.getInt("maxStorageMb")
+            )
+        }
+    } catch (_: Exception) {
+        null
+    }
+
+    private fun decodeLegacy(id: String, raw: String): RecordingSchedule? {
+        val parts = raw.split("|")
+        if (parts.size != 8 || parts[7] != "v1") return null
+        return RecordingSchedule(
+            id = id,
+            startTimeMillis = parts[0].toLongOrNull() ?: return null,
+            endTimeMillis = parts[1].toLongOrNull() ?: return null,
+            repeat = parts[2],
+            timezone = parts[3],
+            mode = parts[4],
+            sensitivity = parts[5].toDoubleOrNull() ?: 0.6,
+            maxStorageMb = parts[6].toIntOrNull() ?: 200
+        )
     }
 
     private fun ids(context: Context): Set<String> =
@@ -109,10 +150,30 @@ object ScheduleStore {
 
     private fun key(id: String) = "schedule_$id"
 
+    private fun requestCodeKey(id: String) = "schedule_request_code_$id"
+
+    private fun requestCode(context: Context, id: String): Int {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val existing = prefs.getInt(requestCodeKey(id), 0)
+        if (existing > 0) return existing
+
+        val used = ids(context).mapNotNull { candidate ->
+            prefs.getInt(requestCodeKey(candidate), 0).takeIf { it > 0 }
+        }.toSet()
+        var next = maxOf(prefs.getInt(KEY_NEXT_REQUEST_CODE, REQUEST_CODE_START), REQUEST_CODE_START)
+        while (next in used) next++
+        prefs.edit()
+            .putInt(requestCodeKey(id), next)
+            .putInt(KEY_NEXT_REQUEST_CODE, next + 1)
+            .apply()
+        return next
+    }
+
     private fun setAlarms(context: Context, schedule: RecordingSchedule) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        setAlarm(alarmManager, schedule.startTimeMillis, intent(context, schedule, ACTION_START, 1))
-        setAlarm(alarmManager, schedule.endTimeMillis, intent(context, schedule, ACTION_STOP, 2))
+        val baseRequestCode = requestCode(context, schedule.id)
+        setAlarm(alarmManager, schedule.startTimeMillis, intent(context, schedule, ACTION_START, baseRequestCode + 1))
+        setAlarm(alarmManager, schedule.endTimeMillis, intent(context, schedule, ACTION_STOP, baseRequestCode + 2))
     }
 
     private fun setAlarm(alarmManager: AlarmManager, triggerAtMillis: Long, pendingIntent: PendingIntent) {
@@ -133,8 +194,12 @@ object ScheduleStore {
 
     private fun cancelAlarms(context: Context, schedule: RecordingSchedule) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.cancel(intent(context, schedule, ACTION_START, 1))
-        alarmManager.cancel(intent(context, schedule, ACTION_STOP, 2))
+        val baseRequestCode = requestCode(context, schedule.id)
+        alarmManager.cancel(intent(context, schedule, ACTION_START, baseRequestCode + 1))
+        alarmManager.cancel(intent(context, schedule, ACTION_STOP, baseRequestCode + 2))
+        // Cancel alarms created by versions that used String.hashCode().
+        alarmManager.cancel(intent(context, schedule, ACTION_START, schedule.id.hashCode() + 1))
+        alarmManager.cancel(intent(context, schedule, ACTION_STOP, schedule.id.hashCode() + 2))
     }
 
     private fun intent(

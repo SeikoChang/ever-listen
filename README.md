@@ -1,21 +1,47 @@
-# README.md
+# Ever Listen
 
-# Ever Listen (flutter-voice-recorder)
+Ever Listen is a Flutter voice recorder with native Android and iOS capture paths.
+It supports Detect (VAD), Monitoring, and scheduled recording workflows.
 
-A Flutter skeleton app and native plugin stubs for an always-on / VAD-based voice recorder.
+## Current product behavior
 
-This repository contains a minimal Flutter app (flutter_voice_recorder) with a MethodChannel-based native plugin API and native stubs for Android (Kotlin) and iOS (Swift). It also includes a Python prototype for tuning VAD parameters.
+- Android uses a foreground microphone service, local WAV output, pre-roll buffering, storage pruning, and AlarmManager schedules.
+- iOS uses AVAudioEngine and local notifications for schedule reminders. An iOS reminder never starts recording automatically; the user must tap “Start now”.
+- Permission failures expose a path to the platform app settings.
+- Android release builds never fall back to debug signing. Credentials are injected through Gradle properties or CI secrets.
 
-Quick start
-- Install Flutter: https://flutter.dev/docs/get-started/install
-- From the repo root run:
-  - cd flutter_voice_recorder
-  - flutter pub get
-  - flutter run
+## Development
 
-Important notes
-- Native audio capture, background recording and VAD are implemented as platform-native code. The provided native files are skeletons/stubs with guidance and TODOs — you must implement or link an actual VAD library (e.g., WebRTC VAD) and encoding pipeline for production.
-- Android: foreground service sample provided as a stub. You must request RECORD_AUDIO and FOREGROUND_SERVICE permissions and configure the AndroidManifest accordingly.
-- iOS: AVAudioEngine tap stub provided. Add Background Modes -> Audio in Xcode for background recording.
+```sh
+cd flutter_voice_recorder
+flutter pub get
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze
+flutter test
+```
+
+Android unit tests:
+
+```sh
+cd flutter_voice_recorder/android
+gradle :app:createDebugUnitTestCoverageReport --no-daemon --console=plain
+```
+
+Install Gradle `9.1.0` and use Java 17. CI also generates an Android native coverage report; see [docs/BUILD_MATRIX.md](docs/BUILD_MATRIX.md).
+
+See [docs/BUILD_MATRIX.md](docs/BUILD_MATRIX.md) for the toolchain, signing, and CI expectations.
+
+## Verification limits
+
+The repository has Flutter tests and Android/iOS native unit-test suites. Full Android Gradle execution depends on a working local Gradle/JDK cache, while iOS simulator/Xcode verification runs in the macOS CI job. Physical-device, long-duration, OEM battery, and legal/privacy validation are not covered by automated tests.
+
+## Documentation
+
+- [Enhancement plan](docs/ENHANCE_PLAN.md)
+- [Task backlog](TODOs.md)
+- [Product and store copy draft](docs/PRODUCT_COPY_DRAFT.md)
+- [Build matrix](docs/BUILD_MATRIX.md)
+- [Chinese manual test plan](docs/manual_testing_zh.md)
+- [VAD build instructions](docs/VAD_build_instructions.md)
 
 License: MIT

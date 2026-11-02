@@ -1,0 +1,7 @@
+
+# Local TencentDB project memory; immutable project routing, no API credentials here.
+[mcp_servers.project_memory]
+command = "/opt/homebrew/opt/python@3.14/bin/python3.14"
+args = ["/Users/seikochang/Documents/Codex/tencentdb-memory-local/project_memory_mcp.py", "--project", "ever-listen"]
+startup_timeout_sec = 20
+tool_timeout_sec = 90

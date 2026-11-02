@@ -45,6 +45,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Generate a JaCoCo report for the Android local unit-test suite.
+            enableUnitTestCoverage = true
+        }
         release {
             // An unsigned release is preferable to silently shipping a debug-signed artifact.
             signingConfig = signingConfigs.findByName("release")

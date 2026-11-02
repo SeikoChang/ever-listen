@@ -8,66 +8,107 @@ void main() {
   final RecorderPlugin recorder = RecorderPlugin();
   final List<MethodCall> log = <MethodCall>[];
 
+  test('shared state contract rejects implicit interruption recovery', () {
+    expect(
+      canTransitionRecorderState(RecorderState.idle, RecorderState.starting),
+      isTrue,
+    );
+    expect(
+      canTransitionRecorderState(
+        RecorderState.starting,
+        RecorderState.recording,
+      ),
+      isTrue,
+    );
+    expect(
+      canTransitionRecorderState(
+        RecorderState.recording,
+        RecorderState.interrupted,
+      ),
+      isTrue,
+    );
+    expect(
+      canTransitionRecorderState(
+        RecorderState.interrupted,
+        RecorderState.recording,
+      ),
+      isFalse,
+    );
+    expect(
+      canTransitionRecorderState(
+        RecorderState.interrupted,
+        RecorderState.recording,
+        explicitRecovery: true,
+      ),
+      isTrue,
+    );
+    expect(
+      canTransitionRecorderState(RecorderState.idle, RecorderState.recording),
+      isFalse,
+    );
+  });
+
   // Set up mock method channel handler
   setUp(() {
     log.clear();
-    
+
     // In newer Flutter versions, use TestDefaultBinaryMessengerBinding
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('ever_listen/recorder'),
-      (MethodCall methodCall) async {
-        log.add(methodCall);
-        switch (methodCall.method) {
-          case 'startRecording':
-            return null;
-          case 'stopRecording':
-            return null;
-          case 'setSensitivity':
-            return null;
-          case 'setMaxStorageMb':
-            return null;
-          case 'getStatus':
-            return {
-              'running': true,
-              'mode': 'detect',
+        .setMockMethodCallHandler(const MethodChannel('ever_listen/recorder'), (
+      MethodCall methodCall,
+    ) async {
+      log.add(methodCall);
+      switch (methodCall.method) {
+        case 'startRecording':
+          return null;
+        case 'stopRecording':
+          return null;
+        case 'setSensitivity':
+          return null;
+        case 'setMaxStorageMb':
+          return null;
+        case 'getStatus':
+          return {
+            'running': true,
+            'mode': 'detect',
+            'sensitivity': 0.6,
+            'maxStorageMb': 200,
+            'currentFilePath': '/path/to/file.wav',
+            'storageUsedMb': 12.5,
+            'schedules': [],
+          };
+        case 'openAppSettings':
+          return true;
+        case 'scheduleRecording':
+          return {
+            'id': methodCall.arguments['id'] ?? 'test-id',
+            'startTimeMillis': methodCall.arguments['startTimeMillis'],
+            'endTimeMillis': methodCall.arguments['endTimeMillis'],
+            'repeat': methodCall.arguments['repeat'],
+            'timezone': methodCall.arguments['timezone'],
+            'mode': methodCall.arguments['mode'],
+            'sensitivity': methodCall.arguments['sensitivity'],
+            'maxStorageMb': methodCall.arguments['maxStorageMb'],
+          };
+        case 'cancelSchedule':
+          return {'cancelled': true, 'id': methodCall.arguments['id']};
+        case 'getSchedules':
+          return [
+            {
+              'id': 'schedule-1',
+              'startTimeMillis': 1700000000000,
+              'endTimeMillis': 1700000300000,
+              'repeat': 'once',
+              'timezone': 'UTC',
+              'mode': 'schedule',
               'sensitivity': 0.6,
               'maxStorageMb': 200,
-              'currentFilePath': '/path/to/file.wav',
-              'storageUsedMb': 12.5,
-              'schedules': []
-            };
-          case 'scheduleRecording':
-            return {
-              'id': methodCall.arguments['id'] ?? 'test-id',
-              'startTimeMillis': methodCall.arguments['startTimeMillis'],
-              'endTimeMillis': methodCall.arguments['endTimeMillis'],
-              'repeat': methodCall.arguments['repeat'],
-              'timezone': methodCall.arguments['timezone'],
-              'mode': methodCall.arguments['mode'],
-              'sensitivity': methodCall.arguments['sensitivity'],
-              'maxStorageMb': methodCall.arguments['maxStorageMb'],
-            };
-          case 'cancelSchedule':
-            return {'cancelled': true, 'id': methodCall.arguments['id']};
-          case 'getSchedules':
-            return [
-              {
-                'id': 'schedule-1',
-                'startTimeMillis': 1700000000000,
-                'endTimeMillis': 1700000300000,
-                'repeat': 'once',
-                'timezone': 'UTC',
-                'mode': 'schedule',
-                'sensitivity': 0.6,
-                'maxStorageMb': 200,
-              }
-            ];
-          default:
-            return null;
-        }
-      },
-    );
+            },
+          ];
+        default:
+          return null;
+      }
+    });
   });
 
   tearDown(() {
@@ -78,21 +119,24 @@ void main() {
     );
   });
 
-  test('startRecording invokes method channel with correct arguments', () async {
-    await recorder.startRecording(
-      mode: 'monitor',
-      sensitivity: 0.8,
-      maxStorageMb: 500,
-    );
+  test(
+    'startRecording invokes method channel with correct arguments',
+    () async {
+      await recorder.startRecording(
+        mode: 'monitor',
+        sensitivity: 0.8,
+        maxStorageMb: 500,
+      );
 
-    expect(log, hasLength(1));
-    expect(log.single.method, 'startRecording');
-    expect(log.single.arguments, {
-      'mode': 'monitor',
-      'sensitivity': 0.8,
-      'maxStorageMb': 500,
-    });
-  });
+      expect(log, hasLength(1));
+      expect(log.single.method, 'startRecording');
+      expect(log.single.arguments, {
+        'mode': 'monitor',
+        'sensitivity': 0.8,
+        'maxStorageMb': 500,
+      });
+    },
+  );
 
   test('stopRecording invokes method channel', () async {
     await recorder.stopRecording();
@@ -100,6 +144,15 @@ void main() {
     expect(log, hasLength(1));
     expect(log.single.method, 'stopRecording');
     expect(log.single.arguments, null);
+  });
+
+  test('openAppSettings invokes method channel and returns result', () async {
+    final opened = await recorder.openAppSettings();
+
+    expect(log, hasLength(1));
+    expect(log.single.method, 'openAppSettings');
+    expect(log.single.arguments, null);
+    expect(opened, true);
   });
 
   test('setSensitivity invokes method channel', () async {
@@ -118,20 +171,13 @@ void main() {
     expect(log.single.arguments, {'maxStorageMb': 100});
   });
 
-  test('getStatus returns structured status map', () async {
+  test('getStatus returns typed recorder snapshot', () async {
     final status = await recorder.getStatus();
 
     expect(log, hasLength(1));
     expect(log.single.method, 'getStatus');
-    expect(status, {
-      'running': true,
-      'mode': 'detect',
-      'sensitivity': 0.6,
-      'maxStorageMb': 200,
-      'currentFilePath': '/path/to/file.wav',
-      'storageUsedMb': 12.5,
-      'schedules': []
-    });
+    expect(status?.state, RecorderState.recording);
+    expect(status?.mode, 'detect');
   });
 
   test('scheduleRecording invokes method channel and returns map', () async {
@@ -159,14 +205,17 @@ void main() {
     expect(res['maxStorageMb'], 150);
   });
 
-  test('cancelSchedule invokes method channel and returns cancelled status', () async {
-    final cancelled = await recorder.cancelSchedule('schedule-1');
+  test(
+    'cancelSchedule invokes method channel and returns cancelled status',
+    () async {
+      final cancelled = await recorder.cancelSchedule('schedule-1');
 
-    expect(log, hasLength(1));
-    expect(log.single.method, 'cancelSchedule');
-    expect(log.single.arguments, {'id': 'schedule-1'});
-    expect(cancelled, true);
-  });
+      expect(log, hasLength(1));
+      expect(log.single.method, 'cancelSchedule');
+      expect(log.single.arguments, {'id': 'schedule-1'});
+      expect(cancelled, true);
+    },
+  );
 
   test('getSchedules returns list of schedules', () async {
     final schedules = await recorder.getSchedules();

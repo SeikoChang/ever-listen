@@ -14,6 +14,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.mockito.kotlin.*
 import android.content.Intent
+import android.provider.Settings
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [30])
@@ -61,7 +62,10 @@ class RecorderPluginTest {
         val result = captureResult()
         plugin.onMethodCall(MethodCall("startRecording", mapOf("mode" to "detect")), result)
         assertTrue(result.called)
-        assertEquals("started", (result.value as Map<*, *>)["status"])
+        val response = result.value as Map<*, *>
+        assertEquals("starting", response["state"])
+        assertEquals("detect", response["mode"])
+        assertTrue((response["sessionId"] as? String).orEmpty().isNotBlank())
     }
 
     @Test
@@ -199,6 +203,20 @@ class RecorderPluginTest {
         plugin.onMethodCall(MethodCall("requestPermissions", null), result)
         assertTrue(result.called)
         assertEquals("NO_ACTIVITY", result.errorCode)
+    }
+
+    @Test
+    fun openAppSettings_startsApplicationDetailsIntent() {
+        val result = captureResult()
+
+        plugin.onMethodCall(MethodCall("openAppSettings", null), result)
+
+        assertTrue(result.called)
+        assertEquals(true, result.value)
+        val intent = shadowOf(RuntimeEnvironment.getApplication()).nextStartedActivity
+        assertNotNull(intent)
+        assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, intent.action)
+        assertEquals("package:${context.packageName}", intent.data.toString())
     }
 
     // ==================== getStatus (TODO #51) ====================

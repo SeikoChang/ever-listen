@@ -8,7 +8,7 @@ This is a Flutter + native plugins skeleton for a cross-platform voice recorder 
 
 Features include sensitivity tuning, pre-roll buffering, limited storage enforcement, scheduled recording, and platform-specific background handling.
 
-**Current status**: **Android is complete through Phase 4** (all core logic, JNI, background survival, hardening done; device validation deferred). **Phase 5 iOS is in progress:** MethodChannel/EventChannel parity, AVAudioEngine capture, permission handling, schedule CRUD, and BGTaskScheduler dispatcher are implemented; iOS WebRTC VAD linking and full device validation remain. **Next: fix iOS string interpolation bug, link WebRTC VAD for iOS, then device validation on both platforms.**
+**Current status**: Android core recording, foreground-service lifecycle, VAD fallback, storage pruning, schedule persistence, reboot recovery, and permission recovery are implemented; Gradle/CI and physical-device validation remain. iOS MethodChannel/EventChannel parity, AVAudioEngine capture, permission handling, schedule CRUD, local notification reminders, and reminder recovery are implemented. iOS scheduled recording is intentionally best-effort: notifications remind the user and do not auto-start recording. Full Xcode/Simulator/device validation remains.
 
 ---
 
@@ -28,7 +28,7 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
   - `ScheduleRecorderReceiver.kt` (44 lines) — BroadcastReceiver for AlarmManager triggers
   - `BootReceiver.kt` (49 lines) — Reschedules alarms on BOOT_COMPLETED
 - iOS (Swift) plugin with substantial implementation:
-  - `RecorderPlugin.swift` (515 lines) — MethodChannel + EventChannel parity, AVAudioEngine recorder, schedule CRUD, BGTaskScheduler
+  - `RecorderPlugin.swift` — MethodChannel + EventChannel parity, AVAudioEngine recorder, schedule CRUD, local notification reminders, and error reporting
 - Documentation:
   - `docs/design.md` — architecture, API (3 modes), platform notes
   - `docs/VAD_build_instructions.md` — WebRTC VAD build guide
@@ -56,10 +56,10 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
   - Outputs 16-bit PCM WAV files
 
 ### ✅ CI/CD
-- GitHub Actions workflow (`.github/workflows/flutter-ci.yml`) runs `flutter analyze` on PRs
+- GitHub Actions workflow (`.github/workflows/flutter-ci.yml`) runs Dart format, Flutter analyze/test, Android unit tests with a native coverage report, Android debug APK build/artifact upload, and iOS simulator build/RunnerTests with a native coverage report.
 
 ### ✅ Android Foundation (Complete through Phase 4)
-- Android unit tests (6 test files): `AudioFileWriterTest`, `AudioFrameBufferTest`, `BootReceiverTest`, `RecordingStorageTest`, `ScheduleStoreTest`, `VADProcessorTest`
+- Android unit tests include `AudioFileWriterTest`, `AudioFrameBufferTest`, `BootReceiverTest`, `RecorderPluginTest`, `RecorderServiceTest`, `RecordingStorageTest`, `ScheduleStoreTest`, and `VADProcessorTest`.
 - WebRTC VAD C sources and JNI bindings integrated and built for `arm64-v8a` and `armeabi-v7a`
 - `VADNativeBridge.kt` loads native lib with graceful fallback to `MockVADProcessor`
 - `BootReceiver.kt` reschedules alarms after device reboot; cleans expired one-time schedules
@@ -72,106 +72,29 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
 ### ✅ License & Meta
 - MIT License
 - .gitignore configured for Flutter/Dart/Python
-- Initial README
+- Build toolchain and signing policy: `docs/BUILD_MATRIX.md`
 
 ---
 
-## Test Coverage Report
+## Native Coverage Reports
 
-### Overview
+Native coverage is generated from the Android and iOS CI test suites and uploaded as separate workflow artifacts. See [docs/BUILD_MATRIX.md](docs/BUILD_MATRIX.md) for artifact names, report paths, and local commands. Reports describe code exercised by those test runs; they do not measure physical-device behavior or prove correctness. Android unit-test coverage covers Kotlin/Java code, not JNI C/C++ code. Android and iOS use different tooling and scopes, so their percentages are not combined. No coverage threshold is currently enforced.
 
-| Platform | Test Files | Source Lines | Coverage |
-|----------|-----------|-------------|----------|
-| Android (Kotlin) | 6 | ~1,442 lines | **~33%** (core logic 0%) |
-| Dart/Flutter | 2 | 384 lines | **~30%** (API layer only) |
-| iOS (Swift) | 1 | 515 lines | **~35%** | 🟡 Data layer covered |
-| **Total** | **8** | **~2,341 lines** | **~22%** |
+### Qualitative test gaps to track
 
-### Per-Module Breakdown
-
-| Module | Lines | Test | Coverage | Risk |
-|--------|-------|------|----------|------|
-| **RecorderPlugin.kt** | 303 | ❌ None | **0%** | 🔴 Core entry point |
-| **RecorderService.kt** | 482 | ❌ None | **0%** | 🔴 Core recording logic |
-| **RecorderPlugin.swift** | 515 | RecorderPluginTests.swift | **~35%** | 🟡 Data layer tested, audio hardware deferred |
-| VADNativeBridge.kt | 22 | ❌ None | 0% | 🟡 Small |
-| ScheduleRecorderReceiver.kt | 44 | ❌ None | 0% | 🟡 Small |
-| VADProcessor.kt | 118 | VADProcessorTest.kt | **~80%** | 🟢 Edge cases covered |
-| AudioFrameBuffer.kt | 36 | AudioFrameBufferTest.kt | **~90%** | 🟢 Well covered |
-| AudioFileWriter.kt | 114 | AudioFileWriterTest.kt | **~70%** | 🟡 Missing multi-frame |
-| RecordingStorage.kt | 42 | RecordingStorageTest.kt | **~85%** | 🟢 Well covered |
-| ScheduleStore.kt | 159 | ScheduleStoreTest.kt | **~80%** | 🟢 Edge cases covered |
-| BootReceiver.kt | 49 | BootReceiverTest.kt | **~75%** | 🟢 Recurring reschedule covered |
-| recorder_plugin.dart | 81 | recorder_plugin_test.dart | **~90%** | 🟢 But only MethodChannel calls |
-| main.dart | 303 | widget_test.dart | **~10%** | 🟡 Only UI render |
-
-### Critical Gap: Core Recording Logic 0% Coverage
-
-**RecorderService.kt (482 lines)** — All key logic untested:
-- `audioCaptureLoop()` — detect/monitor/schedule mode frame processing
-- `startRecording()` / `stopRecording()` — lifecycle management
-- `rotateCurrentFile()` — file rotation + fileReady event
-- `enforceStorageLimit()` — storage limit enforcement
-- `showNotification()` — foreground notification
-
-**RecorderPlugin.kt (303 lines)** — All MethodChannel handlers untested:
-- Mode validation (detect/monitor/schedule)
-- Schedule input validation (startTime, endTime, repeat)
-- Permission checks (RECORD_AUDIO, SCHEDULE_EXACT_ALARM)
-- `handleRequestPermissions()` — permission request flow
-
-### Existing Test Gaps
-
-| Test | Covered | Missing |
-|------|---------|---------|
-| VADProcessorTest | silence/speech, UnsatisfiedLinkError, sensitivity 0.0/1.0, dynamic switch, empty frame | ✅ Complete |
-| AudioFileWriterTest | single WAV header validation | multi-frame sequential write, file reopen |
-| RecordingStorageTest | prune + protectedFile, `totalBytes()`, `ensureDirectory()`, empty dir | ✅ Complete |
-| ScheduleStoreTest | CRUD, daily/weekly reschedule, same-id replace, invalid input, timezone edge cases | ✅ Complete |
-| BootReceiverTest | future alarm reschedule, expired cleanup, recurring reschedule, empty schedule | ✅ Complete |
-
-### Recommended Priority
-
-| Priority | Action | Impact |
-|----------|--------|--------|
-| **P0** | RecorderPlugin.kt tests (Robolectric) — parameter validation + permission logic | Covers all MethodChannel handlers |
-| **P0** | RecorderService.kt tests (mock AudioRecord) — detect/monitor/schedule flows | Covers core recording logic |
-| **P1** | RecorderPlugin.swift tests — MethodChannel handlers | iOS currently 0% |
-| **P1** | Fill VADProcessor/Storage/ScheduleStore edge cases | Lift existing tests to 90%+ |
-| **P2** | Integration tests (plugin → service → file output) | Cross-module validation |
+- Android unit tests cover recorder plugin/service logic and supporting VAD, audio-file, storage, and scheduling components. Host-side tests do not validate microphone hardware, OS background execution, alarm delivery, or OEM-specific behavior.
+- iOS simulator tests cover schedule persistence/normalization, reminder triggers, and selected status behavior. They do not establish physical-device audio capture, interruption recovery, or background reliability.
+- Cross-platform end-to-end parity and physical-device behavior still require dedicated tests and manual validation. Treat these as follow-up work, not as measured coverage claims.
 
 ---
 
 ## What Remains To Be Done
 
-### Priority 0 — Test Coverage (Before Device Validation)
+### Native coverage and device validation
 
-**Android RecorderPlugin.kt Tests** (P0):
-- [ ] Test all 10 MethodChannel handlers with Robolectric (startRecording, stopRecording, setSensitivity, setMaxStorageMb, scheduleRecording, cancelSchedule, getSchedules, requestPermissions, getStatus)
-- [ ] Test mode validation (detect/monitor/schedule, invalid mode)
-- [ ] Test schedule input validation (startTime, endTime, repeat values)
-- [ ] Test permission checks (RECORD_AUDIO denied, SCHEDULE_EXACT_ALARM flow)
-- [ ] Test `handleRequestPermissions()` — granted/denied scenarios
-
-**Android RecorderService.kt Tests** (P0):
-- [ ] Test `startRecording()` / `stopRecording()` lifecycle with mock AudioRecord
-- [ ] Test `audioCaptureLoop()` in detect mode (speech detection, pre-roll, file output)
-- [ ] Test `audioCaptureLoop()` in monitor mode (continuous write, chunk rotation)
-- [ ] Test `audioCaptureLoop()` in schedule mode
-- [ ] Test `rotateCurrentFile()` — fileReady event emission
-- [ ] Test `enforceStorageLimit()` — storage pruning triggers
-- [ ] Test mode validation in `startRecording()` (invalid mode → error event)
-
-**iOS RecorderPlugin.swift Tests** (P1):
-- [ ] Test MethodChannel handlers (startRecording, stopRecording, scheduleRecording, etc.)
-- [ ] Test schedule normalization (once/daily/weekly)
-- [ ] Test AudioEngineRecorder initialization and frame processing
-
-**Existing Test Gap Fill** (P1):
-- [ ] VADProcessorTest: add sensitivity 0.0/1.0 edge cases, dynamic sensitivity switch
-- [ ] RecordingStorageTest: add `totalBytes()`, `ensureDirectory()`, empty directory
-- [ ] ScheduleStoreTest: add invalid input validation, timezone edge cases
-- [ ] BootReceiverTest: add recurring schedule rescheduling
+- [ ] Review Android and iOS CI coverage artifacts when assessing test gaps; do not substitute estimated percentages.
+- [ ] Add targeted tests for uncovered behavior identified from generated reports and code review.
+- [ ] Validate microphone, background execution, interruptions, schedules, and OEM behavior on physical devices.
 
 ### Priority 1 — iOS Bug Fix & WebRTC VAD Linking
 
@@ -236,14 +159,9 @@ Features include sensitivity tuning, pre-roll buffering, limited storage enforce
 - [ ] Add cloud upload or sync options
 - [ ] Improve overall UI polish
 
-### Priority 5 — Testing (Detailed coverage report above)
+### Priority 5 — Testing
 
-See the **Test Coverage Report** section for the full per-module breakdown. Key remaining items:
-- [ ] RecorderPlugin.kt tests (Robolectric) — all 10 MethodChannel handlers
-- [ ] RecorderService.kt tests — detect/monitor/schedule mode flows
-- [ ] RecorderPlugin.swift tests — iOS currently 0%
-- [ ] Fill existing test gaps (VADProcessor, Storage, ScheduleStore edge cases)
-- [ ] Cross-platform integration tests for feature parity
+Use the generated CI coverage artifacts to select focused follow-up tests. Keep cross-platform parity, hardware behavior, background execution, and interruption recovery as qualitative validation gaps until covered by tests or device results.
 
 ---
 
