@@ -490,7 +490,12 @@ final class AudioEngineRecorder {
 
   var storageUsedMb: Double { storageBytes() / (1024 * 1024) }
 
-  init(mode: String, sensitivity: Double, maxStorageMb: Int, eventSink: FlutterEventSink?) throws {
+  init(
+    mode: String,
+    sensitivity: Double,
+    maxStorageMb: Int,
+    eventSink: ((String, [String: Any]) -> Void)?
+  ) throws {
     self.mode = mode
     self.sensitivity = sensitivity
     self.maxStorageMb = maxStorageMb
