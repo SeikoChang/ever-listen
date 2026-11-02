@@ -50,13 +50,11 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
 
   public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
     eventSink = events
-    recorder?.eventSink = events
     return nil
   }
 
   public func onCancel(withArguments arguments: Any?) -> FlutterError? {
     eventSink = nil
-    recorder?.eventSink = nil
     return nil
   }
 
@@ -142,7 +140,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
             mode: mode,
             sensitivity: self.sensitivity,
             maxStorageMb: self.maxStorageMb,
-            eventSink: self.eventSink
+            eventSink: self.recorderEventSink(for: newSessionId)
           )
           try audioRecorder.start()
           self.recorder = audioRecorder
@@ -398,16 +396,22 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
     center.removeDeliveredNotifications(withIdentifiers: [identifier])
   }
 
-  private func sendEvent(_ type: String, _ data: [String: Any]) {
+  private func sendEvent(_ type: String, _ data: [String: Any], sessionId eventSessionId: String? = nil) {
     var event: [String: Any] = ["type": type, "data": data, "timestamp": Int(Date().timeIntervalSince1970 * 1000)]
     if type == "recordingStarted" {
       event["state"] = "recording"
-      event["sessionId"] = sessionId ?? ""
+      event["sessionId"] = eventSessionId ?? sessionId ?? ""
     } else if type == "recordingStopped" {
       event["state"] = "idle"
-      event["sessionId"] = sessionId ?? ""
+      event["sessionId"] = eventSessionId ?? sessionId ?? ""
     }
     eventSink?(event)
+  }
+
+  func recorderEventSink(for sessionId: String) -> (String, [String: Any]) -> Void {
+    { [weak self] type, data in
+      self?.sendEvent(type, data, sessionId: sessionId)
+    }
   }
 
   func normalizedSchedules(now: Double) -> [[String: Any]] {
@@ -456,7 +460,7 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
   }
 }
 
-private final class AudioEngineRecorder {
+final class AudioEngineRecorder {
   fileprivate static let vadSampleRate = 16_000.0
   fileprivate static let vadFrameSampleCount = 320 // 20 ms at 16 kHz
 
@@ -465,7 +469,7 @@ private final class AudioEngineRecorder {
     didSet { vadProcessor?.setSensitivity(sensitivity) }
   }
   var maxStorageMb: Int
-  var eventSink: FlutterEventSink?
+  var eventSink: ((String, [String: Any]) -> Void)?
   private let engine = AVAudioEngine()
   private var outputFile: AVAudioFile?
   private var speechActive = false
@@ -703,9 +707,10 @@ private final class AudioEngineRecorder {
       ?? .distantPast
   }
 
-  private func emit(_ type: String, _ data: [String: Any]) {
-    DispatchQueue.main.async { [weak self] in
-      self?.eventSink?(["type": type, "data": data, "timestamp": Int(Date().timeIntervalSince1970 * 1000)])
+  func emit(_ type: String, _ data: [String: Any]) {
+    let sink = eventSink
+    DispatchQueue.main.async {
+      sink?(type, data)
     }
   }
 }

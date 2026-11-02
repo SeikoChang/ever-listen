@@ -22,6 +22,32 @@ final class RecorderPluginScheduleTests: XCTestCase {
 
   // TODO #64: MethodChannel handlers — start/stop/schedule
 
+  func testAsyncRecordingLifecycleEventsKeepCapturedSessionIdAfterRecorderDeallocation() throws {
+    let expectedSessionId = "session-123"
+    var receivedEvents = [[String: Any]]()
+    let eventsReceived = expectation(description: "recording lifecycle events are delivered")
+    eventsReceived.expectedFulfillmentCount = 2
+    _ = plugin.onListen(withArguments: nil) { event in
+      guard let event = event as? [String: Any] else { return }
+      receivedEvents.append(event)
+      eventsReceived.fulfill()
+    }
+
+    var recorder: AudioEngineRecorder? = try AudioEngineRecorder(
+      mode: "detect",
+      sensitivity: 0.6,
+      maxStorageMb: 200,
+      eventSink: plugin.recorderEventSink(for: expectedSessionId)
+    )
+    recorder?.emit("recordingStarted", ["mode": "detect"])
+    recorder?.emit("recordingStopped", [:])
+    recorder = nil
+
+    wait(for: [eventsReceived], timeout: 1)
+    XCTAssertEqual(receivedEvents.compactMap { $0["type"] as? String }, ["recordingStarted", "recordingStopped"])
+    XCTAssertEqual(receivedEvents.compactMap { $0["sessionId"] as? String }, [expectedSessionId, expectedSessionId])
+  }
+
   func testGetSchedulesReturnsEmptyWhenNone() {
     let schedules = plugin.loadSchedules()
     XCTAssertTrue(schedules.isEmpty)
