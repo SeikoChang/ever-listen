@@ -27,7 +27,11 @@ import UserNotifications
     withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
   ) {
     RecorderPlugin.handleReminderDelivery(notification)
-    completionHandler([.banner, .sound])
+    if #available(iOS 14.0, *) {
+      completionHandler([.banner, .sound])
+    } else {
+      completionHandler([.alert, .sound])
+    }
   }
 
   override func userNotificationCenter(
@@ -41,8 +45,8 @@ import UserNotifications
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-    RecorderPlugin.register(
-      with: engineBridge.pluginRegistry.registrar(forPlugin: "RecorderPlugin")
-    )
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "RecorderPlugin") {
+      RecorderPlugin.register(with: registrar)
+    }
   }
 }

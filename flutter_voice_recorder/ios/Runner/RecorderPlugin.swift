@@ -1,6 +1,7 @@
 import AVFoundation
 import Flutter
 import Foundation
+import os
 import UIKit
 import UserNotifications
 
@@ -446,7 +447,8 @@ public final class RecorderPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
       at: storageDirectory(), includingPropertiesForKeys: [.fileSizeKey]
     ) else { return 0 }
     let bytes = files.reduce(Int64(0)) { total, url in
-      total + (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize).flatMap(Int64.init) ?? 0
+      let fileSize = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
+      return total + Int64(fileSize)
     }
     return Double(bytes) / (1024 * 1024)
   }
@@ -542,7 +544,13 @@ private final class AudioEngineRecorder {
       return
     }
 
-    let speech = processVAD(buffer) ?? (rms(buffer) > (0.02 + (1 - sensitivity) * 0.08))
+    let speech: Bool
+    if let vadSpeech = processVAD(buffer) {
+      speech = vadSpeech
+    } else {
+      let threshold = Float(0.02 + (1 - sensitivity) * 0.08)
+      speech = rms(buffer) > threshold
+    }
     if speech {
       silenceFrames = 0
       if !speechActive {
@@ -724,7 +732,7 @@ private final class WebRTCVADProcessor {
     let s = sensitivity.clamped(to: 0.0...1.0)
     let aggressiveness = Int((1.0 - s) * 3).clamped(to: 0...3)
     vad_destroy(handle)
-    handle = vad_init(aggressiveness)
+    handle = vad_init(Int32(aggressiveness))
   }
 
   /// Process one mono PCM16 frame at 16 kHz. Returns nil if the native VAD is
