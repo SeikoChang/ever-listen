@@ -8,6 +8,7 @@
 | Android Gradle Plugin | `9.0.1` | `android/settings.gradle.kts` | 已固定 |
 | Gradle distribution | `9.1.0-all` | `android/gradle/wrapper/gradle-wrapper.properties` | CI installs `9.1.0`; wrapper launchers are generated for Flutter packaging |
 | Kotlin | 使用 AGP 9 built-in Kotlin；不再套用 Kotlin Android plugin | `android/app/build.gradle.kts` | 已完成 migration，待 Gradle CI 驗證 |
+| Android Gradle DSL compatibility | `android.newDsl=false` exposes the legacy AGP extension still queried by Flutter `3.41.4`'s Gradle plugin | `android/gradle.properties` | Temporary compatibility setting; remove after the pinned Flutter Gradle plugin supports AGP 9's new DSL |
 | Android native coverage | Debug local unit tests generate an AGP JaCoCo HTML report, uploaded by CI | `.github/workflows/flutter-ci.yml`, `android/app/build.gradle.kts` | 待 GitHub Actions 通過 |
 | Java | CI 使用 Temurin 17；本機建議使用 Android Studio JBR 17 | `.github/workflows/flutter-ci.yml` | CI 已宣告 |
 | Android SDK / compile SDK | 由 Flutter Gradle extension 的 `flutter.compileSdkVersion` 提供 | `android/app/build.gradle.kts` | 依 Flutter SDK 解析 |

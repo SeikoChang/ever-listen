@@ -14,13 +14,18 @@ bool canTransitionRecorderState(
   }
   return switch (current) {
     RecorderState.idle => next == RecorderState.starting,
-    RecorderState.starting =>
-      next == RecorderState.recording || next == RecorderState.stopping || next == RecorderState.error,
-    RecorderState.recording =>
-      next == RecorderState.stopping || next == RecorderState.interrupted || next == RecorderState.error,
-    RecorderState.stopping => next == RecorderState.idle || next == RecorderState.error,
-    RecorderState.interrupted => next == RecorderState.stopping || next == RecorderState.error,
-    RecorderState.error => next == RecorderState.idle || next == RecorderState.starting,
+    RecorderState.starting => next == RecorderState.recording ||
+        next == RecorderState.stopping ||
+        next == RecorderState.error,
+    RecorderState.recording => next == RecorderState.stopping ||
+        next == RecorderState.interrupted ||
+        next == RecorderState.error,
+    RecorderState.stopping =>
+      next == RecorderState.idle || next == RecorderState.error,
+    RecorderState.interrupted =>
+      next == RecorderState.stopping || next == RecorderState.error,
+    RecorderState.error =>
+      next == RecorderState.idle || next == RecorderState.starting,
   };
 }
 
@@ -58,7 +63,12 @@ class RecorderStatus {
 }
 
 class RecorderEvent {
-  const RecorderEvent({required this.type, this.sessionId, this.state, this.data = const {}});
+  const RecorderEvent({
+    required this.type,
+    this.sessionId,
+    this.state,
+    this.data = const {},
+  });
   final String type;
   final String? sessionId;
   final RecorderState? state;
@@ -67,11 +77,11 @@ class RecorderEvent {
   factory RecorderEvent.fromMap(Map<Object?, Object?> map) {
     final states = RecorderState.values.where((v) => v.name == map['state']);
     return RecorderEvent(
-        type: map['type'] as String? ?? 'unknown',
-        sessionId: map['sessionId'] as String?,
-        state: states.isEmpty ? null : states.first,
-        data: Map<String, Object?>.from(map['data'] as Map? ?? const {}),
-      );
+      type: map['type'] as String? ?? 'unknown',
+      sessionId: map['sessionId'] as String?,
+      state: states.isEmpty ? null : states.first,
+      data: Map<String, Object?>.from(map['data'] as Map? ?? const {}),
+    );
   }
 }
 
@@ -79,9 +89,11 @@ class RecorderPlugin {
   static const MethodChannel _channel = MethodChannel('ever_listen/recorder');
   static const EventChannel _eventChannel = EventChannel('ever_listen/events');
 
-  Stream<RecorderEvent> get events => _eventChannel
-      .receiveBroadcastStream()
-      .map((event) => RecorderEvent.fromMap(Map<Object?, Object?>.from(event as Map)));
+  Stream<RecorderEvent> get events =>
+      _eventChannel.receiveBroadcastStream().map(
+            (event) =>
+                RecorderEvent.fromMap(Map<Object?, Object?>.from(event as Map)),
+          );
 
   Future<void> startRecording({
     String mode = 'detect',
