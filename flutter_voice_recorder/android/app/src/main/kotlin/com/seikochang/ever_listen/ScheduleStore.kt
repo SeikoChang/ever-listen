@@ -111,17 +111,20 @@ object ScheduleStore {
 
     private fun decodeJson(id: String, raw: String): RecordingSchedule? = try {
         val json = JSONObject(raw)
-        if (json.optInt("schemaVersion", -1) != CURRENT_SCHEMA_VERSION) return null
-        RecordingSchedule(
-            id = id,
-            startTimeMillis = json.getLong("startTimeMillis"),
-            endTimeMillis = json.getLong("endTimeMillis"),
-            repeat = json.getString("repeat"),
-            timezone = json.getString("timezone"),
-            mode = json.getString("mode"),
-            sensitivity = json.getDouble("sensitivity"),
-            maxStorageMb = json.getInt("maxStorageMb")
-        )
+        if (json.optInt("schemaVersion", -1) != CURRENT_SCHEMA_VERSION) {
+            null
+        } else {
+            RecordingSchedule(
+                id = id,
+                startTimeMillis = json.getLong("startTimeMillis"),
+                endTimeMillis = json.getLong("endTimeMillis"),
+                repeat = json.getString("repeat"),
+                timezone = json.getString("timezone"),
+                mode = json.getString("mode"),
+                sensitivity = json.getDouble("sensitivity"),
+                maxStorageMb = json.getInt("maxStorageMb")
+            )
+        }
     } catch (_: Exception) {
         null
     }
