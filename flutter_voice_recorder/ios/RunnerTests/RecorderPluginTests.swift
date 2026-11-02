@@ -205,13 +205,13 @@ final class RecorderPluginScheduleTests: XCTestCase {
 
   // TODO #64: number() helper tests
 
-  func testNumberWithNSNumber() {
+  func testNumberWithNSNumber() throws {
     let ns = NSNumber(value: 3.14)
-    XCTAssertEqual(plugin.number(ns), 3.14, accuracy: 0.0001)
+    XCTAssertEqual(try XCTUnwrap(plugin.number(ns)), 3.14, accuracy: 0.0001)
   }
 
-  func testNumberWithInt() {
-    XCTAssertEqual(plugin.number(42 as NSNumber), 42.0, accuracy: 0.0001)
+  func testNumberWithInt() throws {
+    XCTAssertEqual(try XCTUnwrap(plugin.number(42 as NSNumber)), 42.0, accuracy: 0.0001)
   }
 
   func testNumberWithNil() {
