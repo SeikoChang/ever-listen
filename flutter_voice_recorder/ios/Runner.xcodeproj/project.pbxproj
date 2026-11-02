@@ -20,6 +20,24 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		38B119397B3F4231D505C271 /* complex_bit_reverse.c in Sources */ = {isa = PBXBuildFile; fileRef = 79A617FDE6A5F55C3E6D34AB /* complex_bit_reverse.c */; };
+		B698616B54371A33EFB92417 /* complex_fft.c in Sources */ = {isa = PBXBuildFile; fileRef = 802BE03C7FD8E7A2F37DEE9E /* complex_fft.c */; };
+		7F9BAB99F06DDD33E5034330 /* cross_correlation.c in Sources */ = {isa = PBXBuildFile; fileRef = CDD8B41FAAC8BA55FAF9D06C /* cross_correlation.c */; };
+		22B65DC985804F42531319E9 /* division_operations.c in Sources */ = {isa = PBXBuildFile; fileRef = 7965FD847F34C5D661244D67 /* division_operations.c */; };
+		175158F7F3F9040547E2D9DB /* downsample_fast.c in Sources */ = {isa = PBXBuildFile; fileRef = 3CA069722B8CD7557E4E588C /* downsample_fast.c */; };
+		0B4BED816C2D8D4E2D735A91 /* energy.c in Sources */ = {isa = PBXBuildFile; fileRef = AE53B7ADF94C8B31F8CAA8A2 /* energy.c */; };
+		8711961BCFDC0221E93A75A3 /* get_scaling_square.c in Sources */ = {isa = PBXBuildFile; fileRef = 74104E835AE83F97CC6FB68C /* get_scaling_square.c */; };
+		0C3D8380092A4B4C9BD035EE /* min_max_operations.c in Sources */ = {isa = PBXBuildFile; fileRef = 81EB85043072102A896346FA /* min_max_operations.c */; };
+		2FB5E2625CBA9B8F50405DC2 /* real_fft.c in Sources */ = {isa = PBXBuildFile; fileRef = AFAFAD534DD590E54ECC8CD0 /* real_fft.c */; };
+		238CDFE5D20A23B4F2F68943 /* resample_48khz.c in Sources */ = {isa = PBXBuildFile; fileRef = AFFD9480CFB0EF2FB906F849 /* resample_48khz.c */; };
+		E8525000CCE3C1339CC9E029 /* resample_by_2_internal.c in Sources */ = {isa = PBXBuildFile; fileRef = B9D6D159F93AF6E1D96DE237 /* resample_by_2_internal.c */; };
+		81AB3EAD086BD918FF631F7F /* resample_fractional.c in Sources */ = {isa = PBXBuildFile; fileRef = B48EF95727161C90D0D70A00 /* resample_fractional.c */; };
+		088B5B696A92F627ECF45A9C /* spl_init.c in Sources */ = {isa = PBXBuildFile; fileRef = E5E17CC76897CFFAB16CAF67 /* spl_init.c */; };
+		36E4B126ACDE77E65F88F11A /* vector_scaling_operations.c in Sources */ = {isa = PBXBuildFile; fileRef = F57529482BED19DCE53B59B5 /* vector_scaling_operations.c */; };
+		2A0BA2D3FB4792D714ED84E4 /* vad_core.c in Sources */ = {isa = PBXBuildFile; fileRef = 67DA592E21537ED44FDEA8FB /* vad_core.c */; };
+		222803F3B7E9996E54FBA4A4 /* vad_filterbank.c in Sources */ = {isa = PBXBuildFile; fileRef = 6D2E2B16D5FE94529BEAF490 /* vad_filterbank.c */; };
+		3812FE895EEAFEDA1DC6B9C7 /* vad_gmm.c in Sources */ = {isa = PBXBuildFile; fileRef = C1A4CAECC0003B69177A8E09 /* vad_gmm.c */; };
+		19F8B694793D8D4DB855B6A6 /* vad_sp.c in Sources */ = {isa = PBXBuildFile; fileRef = 2989F97CA46FFF5CC16916AA /* vad_sp.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +87,24 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		79A617FDE6A5F55C3E6D34AB /* complex_bit_reverse.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = complex_bit_reverse.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/complex_bit_reverse.c"; sourceTree = SOURCE_ROOT; };
+		802BE03C7FD8E7A2F37DEE9E /* complex_fft.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = complex_fft.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/complex_fft.c"; sourceTree = SOURCE_ROOT; };
+		CDD8B41FAAC8BA55FAF9D06C /* cross_correlation.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = cross_correlation.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/cross_correlation.c"; sourceTree = SOURCE_ROOT; };
+		7965FD847F34C5D661244D67 /* division_operations.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = division_operations.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/division_operations.c"; sourceTree = SOURCE_ROOT; };
+		3CA069722B8CD7557E4E588C /* downsample_fast.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = downsample_fast.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/downsample_fast.c"; sourceTree = SOURCE_ROOT; };
+		AE53B7ADF94C8B31F8CAA8A2 /* energy.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = energy.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/energy.c"; sourceTree = SOURCE_ROOT; };
+		74104E835AE83F97CC6FB68C /* get_scaling_square.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = get_scaling_square.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/get_scaling_square.c"; sourceTree = SOURCE_ROOT; };
+		81EB85043072102A896346FA /* min_max_operations.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = min_max_operations.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/min_max_operations.c"; sourceTree = SOURCE_ROOT; };
+		AFAFAD534DD590E54ECC8CD0 /* real_fft.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = real_fft.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/real_fft.c"; sourceTree = SOURCE_ROOT; };
+		AFFD9480CFB0EF2FB906F849 /* resample_48khz.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = resample_48khz.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/resample_48khz.c"; sourceTree = SOURCE_ROOT; };
+		B9D6D159F93AF6E1D96DE237 /* resample_by_2_internal.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = resample_by_2_internal.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/resample_by_2_internal.c"; sourceTree = SOURCE_ROOT; };
+		B48EF95727161C90D0D70A00 /* resample_fractional.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = resample_fractional.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/resample_fractional.c"; sourceTree = SOURCE_ROOT; };
+		E5E17CC76897CFFAB16CAF67 /* spl_init.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = spl_init.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/spl_init.c"; sourceTree = SOURCE_ROOT; };
+		F57529482BED19DCE53B59B5 /* vector_scaling_operations.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = vector_scaling_operations.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/signal_processing/vector_scaling_operations.c"; sourceTree = SOURCE_ROOT; };
+		67DA592E21537ED44FDEA8FB /* vad_core.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = vad_core.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/vad/vad_core.c"; sourceTree = SOURCE_ROOT; };
+		6D2E2B16D5FE94529BEAF490 /* vad_filterbank.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = vad_filterbank.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/vad/vad_filterbank.c"; sourceTree = SOURCE_ROOT; };
+		C1A4CAECC0003B69177A8E09 /* vad_gmm.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = vad_gmm.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/vad/vad_gmm.c"; sourceTree = SOURCE_ROOT; };
+		2989F97CA46FFF5CC16916AA /* vad_sp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = vad_sp.c; path = "../../third_party/webrtc-vad/webrtc/common_audio/vad/vad_sp.c"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,6 +176,24 @@
 				5F2DD2273019F9A200A18965 /* vad_wrapper.c */,
 				5F2DD2283019F9A200A18965 /* webrtc_vad.h */,
 				5F2DD2293019F9A200A18965 /* webrtc_vad.c */,
+				79A617FDE6A5F55C3E6D34AB /* complex_bit_reverse.c */,
+				802BE03C7FD8E7A2F37DEE9E /* complex_fft.c */,
+				CDD8B41FAAC8BA55FAF9D06C /* cross_correlation.c */,
+				7965FD847F34C5D661244D67 /* division_operations.c */,
+				3CA069722B8CD7557E4E588C /* downsample_fast.c */,
+				AE53B7ADF94C8B31F8CAA8A2 /* energy.c */,
+				74104E835AE83F97CC6FB68C /* get_scaling_square.c */,
+				81EB85043072102A896346FA /* min_max_operations.c */,
+				AFAFAD534DD590E54ECC8CD0 /* real_fft.c */,
+				AFFD9480CFB0EF2FB906F849 /* resample_48khz.c */,
+				B9D6D159F93AF6E1D96DE237 /* resample_by_2_internal.c */,
+				B48EF95727161C90D0D70A00 /* resample_fractional.c */,
+				E5E17CC76897CFFAB16CAF67 /* spl_init.c */,
+				F57529482BED19DCE53B59B5 /* vector_scaling_operations.c */,
+				67DA592E21537ED44FDEA8FB /* vad_core.c */,
+				6D2E2B16D5FE94529BEAF490 /* vad_filterbank.c */,
+				C1A4CAECC0003B69177A8E09 /* vad_gmm.c */,
+				2989F97CA46FFF5CC16916AA /* vad_sp.c */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -304,6 +358,24 @@
 				7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */,
 				5F2DD22A3019F9A200A18965 /* vad_wrapper.c in Sources */,
 				5F2DD22B3019F9A200A18965 /* webrtc_vad.c in Sources */,
+				38B119397B3F4231D505C271 /* complex_bit_reverse.c in Sources */,
+				B698616B54371A33EFB92417 /* complex_fft.c in Sources */,
+				7F9BAB99F06DDD33E5034330 /* cross_correlation.c in Sources */,
+				22B65DC985804F42531319E9 /* division_operations.c in Sources */,
+				175158F7F3F9040547E2D9DB /* downsample_fast.c in Sources */,
+				0B4BED816C2D8D4E2D735A91 /* energy.c in Sources */,
+				8711961BCFDC0221E93A75A3 /* get_scaling_square.c in Sources */,
+				0C3D8380092A4B4C9BD035EE /* min_max_operations.c in Sources */,
+				2FB5E2625CBA9B8F50405DC2 /* real_fft.c in Sources */,
+				238CDFE5D20A23B4F2F68943 /* resample_48khz.c in Sources */,
+				E8525000CCE3C1339CC9E029 /* resample_by_2_internal.c in Sources */,
+				81AB3EAD086BD918FF631F7F /* resample_fractional.c in Sources */,
+				088B5B696A92F627ECF45A9C /* spl_init.c in Sources */,
+				36E4B126ACDE77E65F88F11A /* vector_scaling_operations.c in Sources */,
+				2A0BA2D3FB4792D714ED84E4 /* vad_core.c in Sources */,
+				222803F3B7E9996E54FBA4A4 /* vad_filterbank.c in Sources */,
+				3812FE895EEAFEDA1DC6B9C7 /* vad_gmm.c in Sources */,
+				19F8B694793D8D4DB855B6A6 /* vad_sp.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -404,6 +476,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.seikochang.flutterVoiceRecorder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				HEADER_SEARCH_PATHS = ("$(inherited)", "$(SRCROOT)/../../third_party/webrtc-vad");
+				GCC_PREPROCESSOR_DEFINITIONS = ("$(inherited)", "WEBRTC_POSIX=1");
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -583,6 +657,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.seikochang.flutterVoiceRecorder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				HEADER_SEARCH_PATHS = ("$(inherited)", "$(SRCROOT)/../../third_party/webrtc-vad");
+				GCC_PREPROCESSOR_DEFINITIONS = ("$(inherited)", "WEBRTC_POSIX=1");
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -605,6 +681,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.seikochang.flutterVoiceRecorder;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				HEADER_SEARCH_PATHS = ("$(inherited)", "$(SRCROOT)/../../third_party/webrtc-vad");
+				GCC_PREPROCESSOR_DEFINITIONS = ("$(inherited)", "WEBRTC_POSIX=1");
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

@@ -9,8 +9,8 @@
 #include "webrtc_vad.h"
 
 void *vad_init(int aggressiveness) {
-    void *handle = WebRtcVad_Create();
-    if (handle == NULL) return NULL;
+    VadInst *handle = NULL;
+    if (WebRtcVad_Create(&handle) != 0 || handle == NULL) return NULL;
 
     if (WebRtcVad_Init(handle) < 0) {
         WebRtcVad_Free(handle);
@@ -27,14 +27,7 @@ void *vad_init(int aggressiveness) {
 
 int vad_process(void *handle, const int16_t *frame, size_t frame_length) {
     if (handle == NULL || frame == NULL) return -1;
-    /*
-     * WebRTC VAD supports 8000, 16000, 32000, 48000 Hz.
-     * AVAudioEngine input node typically provides 44100 or 48000 Hz.
-     * We pass 16000 here because the original Android code uses 16000.
-     *
-     * If your AVAudioEngine format sample rate differs, you may need to
-     * resample before calling this, or change the sample_rate parameter.
-     */
+    /* Swift converts hardware input to mono PCM16 at 16 kHz before this call. */
     return WebRtcVad_Process(handle, 16000, frame, frame_length);
 }
 

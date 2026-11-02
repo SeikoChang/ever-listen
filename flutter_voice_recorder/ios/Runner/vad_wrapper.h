@@ -26,8 +26,8 @@ void *vad_init(int aggressiveness);
  * @param handle       Opaque VAD handle from vad_init().
  * @param frame        Pointer to 16-bit PCM samples.
  * @param frame_length Number of samples (not bytes).
- *                     Recommended: 80, 160, 240, 320, 480, 640
- *                     (10 ms – 30 ms at 8 kHz – 48 kHz).
+ *                     Fixed 16 kHz: 160, 320 or 480 samples
+ *                     (10, 20 or 30 ms).
  * @return  1  – Speech detected
  *          0  – Non-speech (noise / silence)
  *         -1  – Error

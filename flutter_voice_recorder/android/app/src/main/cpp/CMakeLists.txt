@@ -1,46 +1,13 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.18)
+project(everlisten_vad C)
 
-project("everlisten_vad")
-
-add_library(
-    # Sets the name of the library.
-    everlisten_vad
-
-    # Sets the type of the library.
-    SHARED
-
-    # Provides a relative path to your source file(s).
-    webrtc_vad.c
-    everlisten_vad.c
-)
-
-# Searches for a JNI-compatible Java VM library and sets the
-# appropriate variables.
-find_library(
-    # Sets the name of the path variable.
-    jnigraphics
-
-    # Specifies the name of the NDK library that
-    # you want CMake to locate.
-    jnigraphics
-)
-
-target_include_directories(everlisten_vad PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-
-# Specifies directories to include to locate header files.
-target_include_directories(everlisten_vad PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/
-    ${ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include # Standard NDK headers
-)
-
-# Links your native library to the log library and other dependencies.
-target_link_libraries(
-    everlisten_vad
-
-    # The log library included in the NDK.
-    android
-    log
-
-    # Links the target to the jnigraphics library.
-    ${jnigraphics}
-)
+# A single pinned dependency is shared with iOS and host quality tooling.
+get_filename_component(REPO_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../../.." ABSOLUTE)
+set(WEBRTC_ROOT "${REPO_ROOT}/third_party/webrtc-vad")
+file(GLOB WEBRTC_DSP CONFIGURE_DEPENDS "${WEBRTC_ROOT}/webrtc/common_audio/signal_processing/*.c")
+file(GLOB WEBRTC_VAD CONFIGURE_DEPENDS "${WEBRTC_ROOT}/webrtc/common_audio/vad/*.c")
+add_library(everlisten_vad SHARED ${WEBRTC_DSP} ${WEBRTC_VAD} everlisten_vad.c)
+target_include_directories(everlisten_vad PRIVATE "${WEBRTC_ROOT}" "${CMAKE_CURRENT_LIST_DIR}")
+target_compile_definitions(everlisten_vad PRIVATE WEBRTC_POSIX)
+find_library(ANDROID_LOG log REQUIRED)
+target_link_libraries(everlisten_vad ${ANDROID_LOG})
